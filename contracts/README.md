@@ -161,6 +161,14 @@ Live Guardian transactions:
 5. Record Guardian decision: `0xfe628ccb56e7acb78ea7af0fcabf141aa0a46ab73e2cd41c015e498f54b45d2f`
 6. Execute Guardian approved intent: `0x602de1ae86a26601388bd3c19a2ad222e420c1fa7fbd3affe52de31aa59019b9`
 
+Current deployed commit-reveal bounty judge:
+
+- Address: `0xf25720F49d877F4CAD539C6Bf0d2851B5e3Cb809`
+- Deployment tx: `0x6ee694e8fdeecd64759034a130caec0b321381a4df73ebbd782fad4ab843b95f`
+- Deployment gas used: `1,489,250`
+- Owner / initial judge: `0xf6d02F13D7BB5fC24aB6A3D662619641958A3Cf6`
+- Code size: `6,309` bytes
+
 1. Open `contracts/CovenantKernel.sol`.
 2. Compile with Solidity `0.8.24` or newer compatible `0.8.x`.
 3. Deploy constructor with `initialAttestor`.

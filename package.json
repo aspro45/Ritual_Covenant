@@ -12,6 +12,7 @@
     "contract:guardian:test": "node scripts/guardian-tests.cjs",
     "contract:bounty:test": "node scripts/bounty-tests.cjs",
     "contract:deploy:guardian": "node scripts/deploy-guardian.cjs",
+    "contract:deploy:bounty": "node scripts/deploy-bounty.cjs",
     "contract:live": "node scripts/live-ritual-flow.cjs",
     "contract:guardian:live": "node scripts/live-guardian-flow.cjs",
     "contract:test": "node scripts/contract-tests.cjs && node scripts/guardian-tests.cjs && node scripts/bounty-tests.cjs",

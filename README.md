@@ -17,6 +17,8 @@ Ritual Covenant is not another dashboard that watches agents after the damage is
 | Guardian Agent | [`0xC5804673c09e0b492bc2371892c8c0270ef0878E`](https://explorer.ritualfoundation.org/address/0xC5804673c09e0b492bc2371892c8c0270ef0878E) |
 | Guardian deploy tx | [`0x89d11d69c2171f87c2a2051fbc0785cc7e71ce1a6857988d8ba558cdcabc75b5`](https://explorer.ritualfoundation.org/tx/0x89d11d69c2171f87c2a2051fbc0785cc7e71ce1a6857988d8ba558cdcabc75b5) |
 | Guardian live flow tx | [`0x602de1ae86a26601388bd3c19a2ad222e420c1fa7fbd3affe52de31aa59019b9`](https://explorer.ritualfoundation.org/tx/0x602de1ae86a26601388bd3c19a2ad222e420c1fa7fbd3affe52de31aa59019b9) |
+| Commit-Reveal Bounty Judge | [`0xf25720F49d877F4CAD539C6Bf0d2851B5e3Cb809`](https://explorer.ritualfoundation.org/address/0xf25720F49d877F4CAD539C6Bf0d2851B5e3Cb809) |
+| Bounty Judge deploy tx | [`0x6ee694e8fdeecd64759034a130caec0b321381a4df73ebbd782fad4ab843b95f`](https://explorer.ritualfoundation.org/tx/0x6ee694e8fdeecd64759034a130caec0b321381a4df73ebbd782fad4ab843b95f) |
 | Live execution tx | [`0xc2cfd5ee8d7e0106dd9a3067423731979e8f9c4b907b5f1e5a0762f1877e05fa`](https://explorer.ritualfoundation.org/tx/0xc2cfd5ee8d7e0106dd9a3067423731979e8f9c4b907b5f1e5a0762f1877e05fa) |
 | Live agent | `agent #1` |
 | Live check | `check #1` |
@@ -115,6 +117,15 @@ The live Guardian flow was executed on Ritual Chain Testnet: the Guardian was tr
 ## Privacy-Preserving AI Bounty Judge
 
 The repository now includes an assignment-ready commit-reveal module that extends the Covenant idea into fair bounty judging. It does not replace `CovenantKernel`; it adds a focused bounty surface where participants hide answers during the submission phase and reveal them only after copying is no longer useful.
+
+Live deployment:
+
+```text
+CommitRevealBountyJudge: 0xf25720F49d877F4CAD539C6Bf0d2851B5e3Cb809
+Deploy tx: 0x6ee694e8fdeecd64759034a130caec0b321381a4df73ebbd782fad4ab843b95f
+Gas used: 1,489,250
+Owner / initial judge: 0xf6d02F13D7BB5fC24aB6A3D662619641958A3Cf6
+```
 
 Required contract functions:
 
@@ -232,6 +243,13 @@ Run only the commit-reveal bounty suite:
 npm run contract:bounty:test
 ```
 
+Deploy only the commit-reveal bounty contract:
+
+```bash
+set DRY_RUN=true&& npm run contract:deploy:bounty
+set DRY_RUN=false&& npm run contract:deploy:bounty
+```
+
 Estimate gas:
 
 ```bash
@@ -274,6 +292,7 @@ Current verification status:
 - Contract compile: pass
 - Contract tests: pass
 - Commit-reveal bounty tests: pass
+- Commit-reveal bounty deploy: pass
 - Gas estimate: pass
 - Live Ritual flow: pass
 - Live Guardian flow: pass
@@ -324,6 +343,7 @@ scripts/
   bounty-tests.cjs            Local commit-reveal bounty test suite
   deploy-ritual.cjs           Ritual testnet deploy script
   deploy-guardian.cjs         Guardian deploy preflight/deploy script
+  deploy-bounty.cjs           Commit-reveal bounty deploy preflight/deploy script
   live-ritual-flow.cjs        Live on-chain smoke flow
   contract-gas-estimate.cjs   Gas estimates
 

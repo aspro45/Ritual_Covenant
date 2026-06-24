@@ -1348,6 +1348,12 @@ function BountyJudgePage() {
             and anchors one batch input for fair AI judging.
           </p>
           <div className="brief-meta" aria-label="Bounty judge contract links">
+            <a href={`${RITUAL_TESTNET.explorerUrl}/address/${BOUNTY_JUDGE.address}`} target="_blank" rel="noreferrer">
+              Live contract <ExternalLink size={14} />
+            </a>
+            <a href={`${RITUAL_TESTNET.explorerUrl}/tx/${BOUNTY_JUDGE.deploymentTx}`} target="_blank" rel="noreferrer">
+              Deploy tx <ExternalLink size={14} />
+            </a>
             <a href="https://github.com/aspro45/Ritual_Covenant/blob/main/contracts/CommitRevealBountyJudge.sol" target="_blank" rel="noreferrer">
               Solidity <ExternalLink size={14} />
             </a>
@@ -1362,7 +1368,7 @@ function BountyJudgePage() {
           <span>{BOUNTY_JUDGE.status}</span>
           <h3>{BOUNTY_JUDGE.name}</h3>
           <p>{BOUNTY_JUDGE.purpose}</p>
-          <code>{BOUNTY_JUDGE.testCommand}</code>
+          <code>{shortHash(BOUNTY_JUDGE.address, 10, 8)}</code>
         </aside>
       </section>
 

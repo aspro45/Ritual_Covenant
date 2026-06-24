@@ -7,6 +7,7 @@ export const RITUAL_TESTNET = {
   status: "live verified",
   covenantKernel: "0x4086710799f9d1Cb1eDb4D0a64522F00A5790270",
   covenantGuardian: "0xC5804673c09e0b492bc2371892c8c0270ef0878E",
+  commitRevealBountyJudge: "0xf25720F49d877F4CAD539C6Bf0d2851B5e3Cb809",
 };
 
 export const LIVE_PROOF = {
@@ -52,7 +53,7 @@ export const contractIntegrationChecklist = [
   "Run npm.cmd run contract:compile and npm.cmd run contract:test before spending faucet fees.",
   "CovenantKernel is live on Ritual Chain Testnet at 0x4086710799f9d1Cb1eDb4D0a64522F00A5790270.",
   "CovenantGuardianAgent is live at 0xC5804673c09e0b492bc2371892c8c0270ef0878E after local tests, gas estimates, and dry-run preflight.",
-  "CommitRevealBountyJudge is included as an assignment-ready module with local commit/reveal/judging tests.",
+  "CommitRevealBountyJudge is deployed live at 0xf25720F49d877F4CAD539C6Bf0d2851B5e3Cb809 after local commit/reveal/judging tests.",
   "Use the explorer to verify deployment tx 0xdd17daee2f10ec9489898b5ff3660cdfd11942223c2a167d99f404b09322cd30.",
   "Live smoke proof executed agent #1 check #1 through tx 0xc2cfd5ee8d7e0106dd9a3067423731979e8f9c4b907b5f1e5a0762f1877e05fa.",
   "Point the frontend event feed at AgentRegistered, IntentSubmitted, DecisionRecorded, and WillExecuted.",
@@ -129,9 +130,15 @@ export const GUARDIAN_LIVE_PROOF = {
 
 export const BOUNTY_JUDGE = {
   name: "CommitRevealBountyJudge",
-  status: "local tested",
+  status: "live deployed",
+  address: "0xf25720F49d877F4CAD539C6Bf0d2851B5e3Cb809",
+  deploymentTx: "0x6ee694e8fdeecd64759034a130caec0b321381a4df73ebbd782fad4ab843b95f",
+  deploymentGasUsed: "1,489,250",
+  owner: "0xf6d02F13D7BB5fC24aB6A3D662619641958A3Cf6",
+  codeBytes: "6,309",
   sourcePath: "CommitRevealBountyJudge.sol",
   testCommand: "npm.cmd run contract:bounty:test",
+  deployCommand: "npm.cmd run contract:deploy:bounty",
   compileCommand: "npm.cmd run contract:compile",
   purpose:
     "A privacy-preserving bounty module where builders commit hidden answers first, reveal only after the commit window closes, and AI judging consumes one verified batch of eligible answers.",
