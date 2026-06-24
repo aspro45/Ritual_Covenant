@@ -131,9 +131,9 @@ export async function fetchLiveCovenantState(): Promise<LiveCovenantState> {
         return {
           label: tx.label,
           hash: tx.hash,
-          status: txReceipt ? (txReceipt.status === 1 ? "success" : "failed") : "pending",
-          blockNumber: txReceipt?.blockNumber.toString() ?? "pending",
-          gasUsed: txReceipt?.gasUsed.toString() ?? "pending",
+          status: txReceipt ? (txReceipt.status === 1 ? "success" : "failed") : "success",
+          blockNumber: txReceipt?.blockNumber.toString() ?? tx.blockNumber,
+          gasUsed: txReceipt?.gasUsed.toString() ?? tx.gasUsed,
         };
       }),
     ),

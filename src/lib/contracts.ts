@@ -17,22 +17,32 @@ export const LIVE_PROOF = {
     {
       label: "Deploy RitualValueSink",
       hash: "0x94f6cb7c8f65873e6aab18c5ca52a8eb8aee301e056e8554429be2103496c2a3",
+      blockNumber: "36761478",
+      gasUsed: "126151",
     },
     {
       label: "Register live agent",
       hash: "0xd5a51406cb2f124310e947b19c2fbe6328449a924501635906a669837f11d49f",
+      blockNumber: "36761510",
+      gasUsed: "326729",
     },
     {
       label: "Submit executable intent",
       hash: "0x29e3cd7acece9991983b16968f6d1887e2dee23804c8a498c0e18d209aa31393",
+      blockNumber: "36761541",
+      gasUsed: "198001",
     },
     {
       label: "Record allowed decision",
       hash: "0x693019b237d24b91c9ead57c3b8346164a7818734b53118828c52f8e02c12c0d",
+      blockNumber: "36761571",
+      gasUsed: "281897",
     },
     {
       label: "Execute approved intent",
       hash: "0xc2cfd5ee8d7e0106dd9a3067423731979e8f9c4b907b5f1e5a0762f1877e05fa",
+      blockNumber: "36761600",
+      gasUsed: "110738",
     },
   ],
 };

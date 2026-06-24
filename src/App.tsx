@@ -1273,7 +1273,7 @@ export default function App() {
               </a>
             ))}
           </div>
-          <span>Policy Firewall + Secret Control + Machine Inheritance</span>
+          <span>Live CovenantKernel on Ritual Chain Testnet</span>
         </footer>
       </section>
     </main>

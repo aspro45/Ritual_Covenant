@@ -69,12 +69,11 @@ export const clauses = [
 ];
 
 export const stackLinks = [
-  { label: "Ritual", href: "https://ritual.net/" },
+  { label: "Contract", href: "https://explorer.ritualfoundation.org/address/0x4086710799f9d1Cb1eDb4D0a64522F00A5790270" },
+  { label: "Live execution", href: "https://explorer.ritualfoundation.org/tx/0xc2cfd5ee8d7e0106dd9a3067423731979e8f9c4b907b5f1e5a0762f1877e05fa" },
+  { label: "Ritual Explorer", href: "https://explorer.ritualfoundation.org/" },
   { label: "Ritual Docs", href: "https://docs.ritualfoundation.org/" },
-  { label: "Ritual Visualized", href: "https://visualized.ritualfoundation.org/" },
-  { label: "Ritual Skills", href: "https://skills.ritualfoundation.org/" },
-  { label: "Three.js", href: "https://github.com/mrdoob/three.js/" },
-  { label: "React Three Fiber", href: "https://github.com/pmndrs/react-three-fiber" },
+  { label: "Ritual Whitepaper", href: "https://whitepaper.ritualfoundation.org/" },
 ];
 
 export const contractModules = [

@@ -94,7 +94,7 @@ Important implementation notes:
 
 ## Frontend
 
-The app is a Vite + React + Three.js control surface. It uses live on-chain data for the dashboard, contract page, agent page, and receipt proof.
+The app is a production control surface with live Ritual RPC reads for the dashboard, contract page, agent page, and receipt proof.
 
 Key files:
 
