@@ -1,0 +1,108 @@
+# CovenantKernel Handoff
+
+`CovenantKernel.sol` is the no-fee contract artifact for the Ritual Covenant project. It is built as one deployable Solidity contract so the idea can be reviewed now and deployed later when faucet fees are available.
+
+## Why It Stands Out
+
+- One kernel, four internal lanes: agent registry, bonded value, intent firewall, heartbeat inheritance.
+- EIP-712 style policy approval through `policyDigest` and `registerAgentSigned`.
+- Deterministic intent hashes and deterministic decision receipt hashes.
+- Execution cannot happen through `executeApproved` unless the exact calldata was submitted and an attestor recorded `Allowed`.
+- Approved execution debits only the registered agent bond, so one agent cannot drain value bonded by another agent.
+- Only the current agent owner can submit executable intents, heartbeat, or withdraw bond. A successor gains control only after `executeWill`.
+- `Blocked` decisions apply a cooldown; `Slashed` decisions freeze the agent; `Inherited` decisions are reserved for heartbeat recovery.
+- `executeWill` creates a stored inheritance receipt and emits both `DecisionRecorded` and `WillExecuted`.
+- Direct ETH transfers revert so value enters through `registerAgent` or `fundAgent` and stays accounted to an agent bond.
+- No OpenZeppelin imports and no external dependencies, so it can be pasted directly into Remix.
+
+## Main Flow
+
+1. `registerAgent` or `registerAgentSigned` anchors the agent, policy hash, policy CID, memory CID, successor, and heartbeat rule.
+2. `submitIntent` stores a hash-only intent for a no-target review path.
+3. `submitIntentEnvelope` stores a full executable intent with target, value, calldata hash, and TTL.
+4. `recordDecision` writes the policy result as a machine-readable receipt.
+5. `executeApproved` runs only if the stored receipt is `Allowed` and the calldata matches.
+6. `slash` moves bonded value after a violation.
+7. `executeWill` transfers ownership to the successor after the heartbeat expires.
+
+## Local Verification
+
+Before spending faucet fees, run:
+
+```bash
+npm.cmd run contract:compile
+npm.cmd run contract:test
+```
+
+Current local coverage checks:
+
+- deployment on chain id `1979`
+- EIP-712 domain separator
+- direct payment rejection
+- registration validation
+- owner-only heartbeat, withdrawal, and intent submission
+- attestor-only decisions
+- approved execution debiting the correct agent bond
+- cross-agent balance-drain prevention
+- blocked cooldown
+- slashed freeze and bond debit
+- EIP-712 signed registration
+- heartbeat inheritance recovery
+- target revert behavior
+- Ritual-style millisecond timestamp normalization
+
+## Deploy Later
+
+Use Remix or a standard Solidity 0.8.24+ toolchain. Ritual Chain deployment values from the official docs:
+
+- Chain ID: `1979`
+- RPC: `https://rpc.ritualfoundation.org`
+- Explorer: `https://explorer.ritualfoundation.org`
+- Faucet: `https://faucet.ritualfoundation.org`
+
+Current deployed testnet kernel:
+
+- Address: `0x4086710799f9d1Cb1eDb4D0a64522F00A5790270`
+- Deployment tx: `0xdd17daee2f10ec9489898b5ff3660cdfd11942223c2a167d99f404b09322cd30`
+- Deployer / initial attestor: `0xf6d02F13D7BB5fC24aB6A3D662619641958A3Cf6`
+- Live smoke tx: `0xc2cfd5ee8d7e0106dd9a3067423731979e8f9c4b907b5f1e5a0762f1877e05fa`
+- Live smoke result: agent `1`, check `1`, sink received `0.005`, remaining agent bond `0.045`
+
+1. Open `contracts/CovenantKernel.sol`.
+2. Compile with Solidity `0.8.24` or newer compatible `0.8.x`.
+3. Deploy constructor with `initialAttestor`.
+4. Copy the deployed address into `src/lib/contracts.ts`.
+5. Feed frontend rows from the contract events.
+
+## Frontend ABI Surface
+
+These five calls match the visible contract panel:
+
+```solidity
+registerAgent(address agent, bytes32 policyHash, string cid, address successor)
+submitIntent(uint256 agentId, bytes intent, uint256 value)
+recordDecision(uint256 checkId, uint8 decision, string reasonCid)
+slash(uint256 agentId, uint256 amount, address beneficiary)
+executeWill(uint256 agentId, string newMemoryCid)
+```
+
+Advanced calls available for the full build:
+
+```solidity
+registerAgentSigned(...)
+submitIntentEnvelope(...)
+executeApproved(...)
+fundAgent(...)
+heartbeat(...)
+withdrawBond(...)
+policyDigest(...)
+computeIntentHash(...)
+computeReceiptHash(...)
+```
+
+## Receipt Samples
+
+Use these files when explaining the product before deployment:
+
+- `examples/breach-receipt.json`
+- `examples/inheritance-receipt.json`

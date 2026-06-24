@@ -1,0 +1,15 @@
+{
+  "chain": "Ritual Chain Testnet",
+  "contract": "CovenantKernel",
+  "caseId": "CV-0601",
+  "agent": "Research-Choir",
+  "event": "WillExecuted",
+  "decision": "Inherited",
+  "checkId": 601,
+  "previousOwner": "0xA710000000000000000000000000000000000601",
+  "successor": "0x5ACC000000000000000000000000000000000601",
+  "policyHash": "0x4b7dc0e3fa11ed11fe51c9a1a9e17f0000000000000000000000000000000601",
+  "newMemoryCid": "ipfs://bafy-ritual-will-research-choir-successor",
+  "receiptHash": "0x1a5ffe1f5c0e0000000000000000000000000000000000000000000000000601",
+  "effect": "owner = successor; memoryCid = newMemoryCid"
+}

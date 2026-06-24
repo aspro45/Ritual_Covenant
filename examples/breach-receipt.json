@@ -1,0 +1,14 @@
+{
+  "chain": "Ritual Chain Testnet",
+  "contract": "CovenantKernel",
+  "caseId": "CV-0514",
+  "agent": "Trader-Marrow",
+  "event": "DecisionRecorded",
+  "decision": "Blocked",
+  "checkId": 514,
+  "policyHash": "0x91f4c0e3a5b17f1f0e0a118d5e12c0fe00000000000000000000000000000514",
+  "intentHash": "0x0f17c0e19a7e0000000000000000000000000000000000000000000000000514",
+  "reasonCid": "ipfs://bafy-ritual-reason-spend-cap-12pct",
+  "receiptHash": "0xde11c0e3f1a50000000000000000000000000000000000000000000000000514",
+  "effect": "cooldownUntil = now + 45 minutes"
+}
