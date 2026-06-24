@@ -83,6 +83,49 @@ export const GUARDIAN_AGENT = {
     "A deterministic agent companion that can own a CovenantKernel agent, heartbeat it, submit guarded intents, score kernel intents, and write policy receipts when trusted as an attestor.",
 };
 
+export const GUARDIAN_LIVE_PROOF = {
+  agentId: 2,
+  checkId: 2,
+  policyCid: "ipfs://ritual-covenant/guardian-live-policy",
+  missionCid: "ipfs://ritual-covenant/guardian-live-mission",
+  executionValue: "0.001",
+  bondRemaining: "0.019",
+  receiptHash: "0xabfe4b8a1981327b2be50cebda7cd47cd7bccfaf07b27b1c966a03d9ffa01935",
+  latestTx: "0x602de1ae86a26601388bd3c19a2ad222e420c1fa7fbd3affe52de31aa59019b9",
+  txs: [
+    {
+      label: "Trust Guardian attestor",
+      hash: "0x3a17d45aed255bf34955fab46bf353360d766aabb091c888ffb8bc4c9465be74",
+      gasUsed: "47859",
+    },
+    {
+      label: "Allow live sink target",
+      hash: "0x1737bf28d20f8b7dda0ff609ad9af698fa6d5f9b8997bfbdbf03af2a43fc4e1c",
+      gasUsed: "47911",
+    },
+    {
+      label: "Register Guardian agent",
+      hash: "0x8a481317713cfd6b748937ad417dc2f7017f61854d580ee69b44d98a7b4ce6b5",
+      gasUsed: "366858",
+    },
+    {
+      label: "Submit Guardian intent",
+      hash: "0x3e6a8db969d5f26693be76c2f84ba2daeee390fe66f4e128ad5fb8bd97996d68",
+      gasUsed: "213804",
+    },
+    {
+      label: "Record Guardian decision",
+      hash: "0xfe628ccb56e7acb78ea7af0fcabf141aa0a46ab73e2cd41c015e498f54b45d2f",
+      gasUsed: "327913",
+    },
+    {
+      label: "Execute Guardian intent",
+      hash: "0x602de1ae86a26601388bd3c19a2ad222e420c1fa7fbd3affe52de31aa59019b9",
+      gasUsed: "85174",
+    },
+  ],
+};
+
 export const contractMethods = [
   {
     name: "registerAgent",

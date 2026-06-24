@@ -16,11 +16,16 @@ Ritual Covenant is not another dashboard that watches agents after the damage is
 | Deployment tx | [`0xdd17daee2f10ec9489898b5ff3660cdfd11942223c2a167d99f404b09322cd30`](https://explorer.ritualfoundation.org/tx/0xdd17daee2f10ec9489898b5ff3660cdfd11942223c2a167d99f404b09322cd30) |
 | Guardian Agent | [`0xC5804673c09e0b492bc2371892c8c0270ef0878E`](https://explorer.ritualfoundation.org/address/0xC5804673c09e0b492bc2371892c8c0270ef0878E) |
 | Guardian deploy tx | [`0x89d11d69c2171f87c2a2051fbc0785cc7e71ce1a6857988d8ba558cdcabc75b5`](https://explorer.ritualfoundation.org/tx/0x89d11d69c2171f87c2a2051fbc0785cc7e71ce1a6857988d8ba558cdcabc75b5) |
+| Guardian live flow tx | [`0x602de1ae86a26601388bd3c19a2ad222e420c1fa7fbd3affe52de31aa59019b9`](https://explorer.ritualfoundation.org/tx/0x602de1ae86a26601388bd3c19a2ad222e420c1fa7fbd3affe52de31aa59019b9) |
 | Live execution tx | [`0xc2cfd5ee8d7e0106dd9a3067423731979e8f9c4b907b5f1e5a0762f1877e05fa`](https://explorer.ritualfoundation.org/tx/0xc2cfd5ee8d7e0106dd9a3067423731979e8f9c4b907b5f1e5a0762f1877e05fa) |
 | Live agent | `agent #1` |
 | Live check | `check #1` |
+| Guardian live agent | `agent #2` |
+| Guardian live check | `check #2` |
 | Execution value | `0.005 RITUAL` |
+| Guardian execution value | `0.001 RITUAL` |
 | Remaining agent bond | `0.045 RITUAL` |
+| Remaining Guardian bond | `0.019 RITUAL` |
 
 The frontend reads directly from Ritual RPC. It calls `agents(1)`, `intents(1)`, `receipts(1)`, transaction receipts, and `RitualValueSink.received()`. If RPC is unavailable, the UI shows an RPC state instead of falling back to fake data.
 
@@ -103,6 +108,8 @@ Important implementation notes:
 - `previewDecision` scores a kernel intent from on-chain facts before gas is spent on the final receipt.
 - If the kernel owner trusts the Guardian as an attestor, `watchKernelIntent` records `Allowed`, `Blocked`, or `Slashed` decisions directly in `CovenantKernel`.
 - `executeGuardianApproved` executes only after the kernel stores an `Allowed` receipt.
+
+The live Guardian flow was executed on Ritual Chain Testnet: the Guardian was trusted as a kernel attestor, allowlisted the live sink target, registered itself as kernel agent `#2`, submitted check `#2`, recorded an `Allowed` receipt, and executed `0.001 RITUAL` through the kernel.
 
 ## Frontend
 
@@ -192,6 +199,12 @@ Run the live Ritual flow:
 npm run contract:live
 ```
 
+Run the live Guardian flow:
+
+```bash
+npm run contract:guardian:live
+```
+
 Build the frontend:
 
 ```bash
@@ -204,6 +217,7 @@ Current verification status:
 - Contract tests: pass
 - Gas estimate: pass
 - Live Ritual flow: pass
+- Live Guardian flow: pass
 - Frontend build: pass
 - Browser console QA: zero errors
 - Ritual RPC reads: HTTP `200`

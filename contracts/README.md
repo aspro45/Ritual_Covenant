@@ -97,6 +97,26 @@ Current deployed Guardian companion:
 - Max intent value: `0.01`
 - Target allowlist required: `true`
 
+Current live Guardian flow:
+
+- Kernel agent: `2`
+- Guardian check: `2`
+- Policy CID: `ipfs://ritual-covenant/guardian-live-policy`
+- Mission CID: `ipfs://ritual-covenant/guardian-live-mission`
+- Execution value: `0.001`
+- Remaining Guardian bond: `0.019`
+- Receipt hash: `0xabfe4b8a1981327b2be50cebda7cd47cd7bccfaf07b27b1c966a03d9ffa01935`
+- Latest execution tx: `0x602de1ae86a26601388bd3c19a2ad222e420c1fa7fbd3affe52de31aa59019b9`
+
+Live Guardian transactions:
+
+1. Trust Guardian as kernel attestor: `0x3a17d45aed255bf34955fab46bf353360d766aabb091c888ffb8bc4c9465be74`
+2. Allow live sink target: `0x1737bf28d20f8b7dda0ff609ad9af698fa6d5f9b8997bfbdbf03af2a43fc4e1c`
+3. Register Guardian with kernel: `0x8a481317713cfd6b748937ad417dc2f7017f61854d580ee69b44d98a7b4ce6b5`
+4. Submit Guardian intent: `0x3e6a8db969d5f26693be76c2f84ba2daeee390fe66f4e128ad5fb8bd97996d68`
+5. Record Guardian decision: `0xfe628ccb56e7acb78ea7af0fcabf141aa0a46ab73e2cd41c015e498f54b45d2f`
+6. Execute Guardian approved intent: `0x602de1ae86a26601388bd3c19a2ad222e420c1fa7fbd3affe52de31aa59019b9`
+
 1. Open `contracts/CovenantKernel.sol`.
 2. Compile with Solidity `0.8.24` or newer compatible `0.8.x`.
 3. Deploy constructor with `initialAttestor`.

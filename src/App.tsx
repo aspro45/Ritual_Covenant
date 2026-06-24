@@ -33,7 +33,14 @@ import {
   stackLinks,
   type CaseKind,
 } from "./data/covenant";
-import { contractIntegrationChecklist, contractMethods, GUARDIAN_AGENT, guardianMethods, RITUAL_TESTNET } from "./lib/contracts";
+import {
+  contractIntegrationChecklist,
+  contractMethods,
+  GUARDIAN_AGENT,
+  GUARDIAN_LIVE_PROOF,
+  guardianMethods,
+  RITUAL_TESTNET,
+} from "./lib/contracts";
 import { fetchLiveCovenantState, type LiveCovenantState } from "./lib/onchain";
 
 type PageId = "overview" | "brief" | "firewall" | "agents" | "policy" | "inheritance" | "contracts" | "pitch";
@@ -203,10 +210,10 @@ const deployRoute = [
 ];
 
 const guardianRows = [
-  ["Owner model", "Guardian contract owns a kernel agent"],
-  ["Keeper path", "Any caller can pulse heartbeat, no policy control granted"],
-  ["Decision path", "previewDecision reads kernel facts before watchKernelIntent writes a receipt"],
-  ["Deploy guard", "Dry-run gas preflight before any Ritual testnet spend"],
+  ["Live agent", `kernel agent #${GUARDIAN_LIVE_PROOF.agentId}`],
+  ["Live check", `check #${GUARDIAN_LIVE_PROOF.checkId} / Allowed`],
+  ["Execution", `${GUARDIAN_LIVE_PROOF.executionValue} RITUAL moved`],
+  ["Receipt", shortHash(GUARDIAN_LIVE_PROOF.receiptHash, 8, 6)],
 ];
 
 const builderXUrl = "https://x.com/ASPRO_22";
@@ -798,20 +805,20 @@ function AgentsPage({ liveState, liveStatus, liveError }: { liveState: LiveCoven
         </div>
         <div className="guardian-metrics">
           <div>
-            <span>Status</span>
-            <strong>{GUARDIAN_AGENT.status}</strong>
+            <span>Live proof</span>
+            <strong>agent #{GUARDIAN_LIVE_PROOF.agentId} / check #{GUARDIAN_LIVE_PROOF.checkId}</strong>
           </div>
           <div>
             <span>Address</span>
             <strong>{shortHash(GUARDIAN_AGENT.address, 8, 6)}</strong>
           </div>
           <div>
-            <span>Deploy gas used</span>
-            <strong>{GUARDIAN_AGENT.deploymentGasUsed}</strong>
+            <span>Executed value</span>
+            <strong>{GUARDIAN_LIVE_PROOF.executionValue} RITUAL</strong>
           </div>
           <div>
-            <span>Deploy tx</span>
-            <strong>{shortHash(GUARDIAN_AGENT.deploymentTx, 8, 6)}</strong>
+            <span>Bond remaining</span>
+            <strong>{GUARDIAN_LIVE_PROOF.bondRemaining} RITUAL</strong>
           </div>
         </div>
       </section>
@@ -1113,6 +1120,9 @@ function ContractsPage({ liveState, liveStatus, liveError }: { liveState: LiveCo
           </a>
           <a href={`${RITUAL_TESTNET.explorerUrl}/tx/${GUARDIAN_AGENT.deploymentTx}`} target="_blank" rel="noreferrer">
             Deploy tx <ExternalLink size={14} />
+          </a>
+          <a href={`${RITUAL_TESTNET.explorerUrl}/tx/${GUARDIAN_LIVE_PROOF.latestTx}`} target="_blank" rel="noreferrer">
+            Live flow tx <ExternalLink size={14} />
           </a>
           <code>{GUARDIAN_AGENT.dryRunCommand}</code>
           <code>{GUARDIAN_AGENT.deployScript}</code>
