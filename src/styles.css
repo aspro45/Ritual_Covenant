@@ -2411,6 +2411,334 @@ pre {
   color: var(--green);
 }
 
+.intent-simulator,
+.policy-live-test,
+.recovery-planner,
+.abi-playground,
+.wallet-command-panel,
+.pitch-interactive {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(115deg, rgba(68, 255, 153, 0.075), transparent 52%),
+    rgba(5, 14, 10, 0.8);
+  box-shadow: inset 0 1px 0 rgba(244, 255, 247, 0.06);
+}
+
+.intent-simulator {
+  display: grid;
+  gap: 0.9rem;
+  margin: 0 1rem 0.9rem;
+  padding: 1rem;
+}
+
+.simulator-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.simulator-head span,
+.planner-copy span,
+.wallet-command-copy span,
+.abi-copy span,
+.pitch-interactive-copy span {
+  display: block;
+  color: var(--green);
+  font-size: 0.74rem;
+  text-transform: uppercase;
+}
+
+.simulator-head h3,
+.planner-copy h2,
+.wallet-command-copy h2,
+.abi-copy h2,
+.pitch-interactive-copy h2 {
+  margin-top: 0.35rem;
+  color: var(--ink);
+  font-size: clamp(1.22rem, 2.15vw, 1.85rem);
+  line-height: 1.08;
+}
+
+.simulator-controls,
+.planner-controls,
+.abi-param-editor {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.compact-control,
+.compact-toggle {
+  min-width: 0;
+  padding: 0.85rem;
+  border: 1px solid rgba(244, 255, 247, 0.08);
+  border-radius: var(--radius);
+  background: rgba(2, 8, 5, 0.58);
+}
+
+.compact-control,
+.compact-toggle {
+  border-bottom: 1px solid rgba(244, 255, 247, 0.08);
+}
+
+.intent-simulator > p,
+.policy-live-test > p,
+.planner-copy p,
+.wallet-command-copy p,
+.abi-copy p,
+.pitch-interactive-copy p {
+  color: var(--soft);
+  line-height: 1.48;
+}
+
+.simulator-steps,
+.planner-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid rgba(244, 255, 247, 0.08);
+  border-radius: var(--radius);
+  background: rgba(244, 255, 247, 0.08);
+}
+
+.simulator-steps div,
+.planner-steps div {
+  min-width: 0;
+  padding: 0.8rem;
+  background: rgba(3, 9, 6, 0.86);
+}
+
+.simulator-steps span,
+.planner-steps span {
+  color: var(--green);
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-weight: 850;
+}
+
+.simulator-steps strong,
+.planner-steps strong {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--ink);
+}
+
+.simulator-steps em,
+.planner-steps em {
+  display: block;
+  margin-top: 0.3rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-style: normal;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.hash-strip {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(68, 255, 153, 0.18);
+  border-radius: var(--radius);
+  background: rgba(2, 8, 5, 0.72);
+}
+
+.hash-strip span {
+  color: var(--green);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.hash-strip code {
+  color: #dfffe9;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.inline-download {
+  width: fit-content;
+  margin-top: 0.8rem;
+}
+
+.policy-live-test,
+.policy-json-console {
+  min-width: 0;
+  padding: 1rem;
+}
+
+.policy-json-console {
+  overflow: hidden;
+  border: 1px solid rgba(244, 255, 247, 0.1);
+  border-radius: var(--radius);
+  background: #020403;
+}
+
+.policy-json-console pre {
+  max-height: 360px;
+  overflow: auto;
+}
+
+.wallet-command-panel {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.8fr) auto minmax(0, 1.2fr);
+  gap: 1rem;
+  align-items: stretch;
+  padding: 1rem;
+}
+
+.wallet-command-panel .wallet-connect-shell {
+  align-self: start;
+}
+
+.wallet-read-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid rgba(244, 255, 247, 0.08);
+  border-radius: var(--radius);
+  background: rgba(244, 255, 247, 0.08);
+}
+
+.wallet-read-grid div {
+  min-width: 0;
+  padding: 0.9rem;
+  background: rgba(4, 10, 7, 0.84);
+}
+
+.wallet-read-grid span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.wallet-read-grid strong {
+  display: block;
+  margin-top: 0.45rem;
+  color: var(--ink);
+  line-height: 1.28;
+  overflow-wrap: anywhere;
+}
+
+.recovery-planner {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.78fr) minmax(260px, 1fr);
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.planner-steps,
+.planner-hash {
+  grid-column: 1 / -1;
+}
+
+.abi-playground {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.6fr) minmax(280px, 0.88fr) minmax(260px, 0.72fr);
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.abi-controls,
+.abi-output {
+  display: grid;
+  align-content: start;
+  gap: 0.8rem;
+  min-width: 0;
+}
+
+.compact-segmented {
+  padding: 0;
+}
+
+.abi-select select,
+.abi-param-editor input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid rgba(244, 255, 247, 0.12);
+  border-radius: var(--radius);
+  background: rgba(2, 8, 5, 0.82);
+  color: var(--ink);
+  font: inherit;
+}
+
+.abi-select select {
+  padding: 0 0.7rem;
+}
+
+.empty-param {
+  min-height: 58px;
+  padding: 0.9rem;
+  border: 1px solid rgba(244, 255, 247, 0.08);
+  border-radius: var(--radius);
+  color: var(--muted);
+}
+
+.pitch-interactive {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.75fr) minmax(280px, 1fr) minmax(150px, 0.35fr);
+  gap: 1rem;
+  align-items: stretch;
+  padding: 1rem;
+}
+
+.pitch-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+  gap: 0.55rem;
+}
+
+.pitch-choice-grid button {
+  min-height: 44px;
+  border: 1px solid rgba(244, 255, 247, 0.12);
+  border-radius: var(--radius);
+  background: rgba(244, 255, 247, 0.035);
+  color: var(--soft);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.pitch-choice-grid button.active {
+  border-color: rgba(68, 255, 153, 0.42);
+  background: rgba(68, 255, 153, 0.1);
+  color: var(--green);
+}
+
+.pitch-score {
+  display: grid;
+  align-content: center;
+  gap: 0.25rem;
+  padding: 0.9rem;
+  border: 1px solid rgba(244, 255, 247, 0.08);
+  border-radius: var(--radius);
+  background: rgba(2, 8, 5, 0.6);
+}
+
+.pitch-score span {
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.pitch-score strong {
+  color: var(--green);
+  font-size: clamp(1.7rem, 3vw, 2.45rem);
+  line-height: 1;
+}
+
+.pitch-score em {
+  color: var(--soft);
+  font-style: normal;
+  line-height: 1.35;
+}
+
 @media (max-width: 1240px) {
   .app-shell {
     grid-template-columns: 1fr;
@@ -3318,6 +3646,17 @@ body {
   color: var(--paper-ink);
 }
 
+.policy-paper .inline-download {
+  border-color: var(--black);
+  background: var(--green);
+  color: #04100b;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.55);
+}
+
+.policy-paper .inline-download svg {
+  color: currentColor;
+}
+
 .control-row input,
 .offline-slider input {
   accent-color: var(--amber);
@@ -3922,5 +4261,51 @@ body {
   .dual-inputs,
   .workbench-actions {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1040px) {
+  .wallet-command-panel,
+  .abi-playground,
+  .pitch-interactive {
+    grid-template-columns: 1fr;
+  }
+
+  .wallet-read-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .recovery-planner,
+  .simulator-controls,
+  .planner-controls,
+  .abi-param-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .simulator-head {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .intent-simulator {
+    margin: 0 0.75rem 0.85rem;
+    padding: 0.85rem;
+  }
+
+  .wallet-read-grid,
+  .pitch-choice-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .policy-live-test,
+  .policy-json-console,
+  .recovery-planner,
+  .abi-playground,
+  .wallet-command-panel,
+  .pitch-interactive {
+    padding: 0.85rem;
   }
 }

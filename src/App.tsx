@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { keccak256, stringToHex, type Address } from "viem";
+import { useAccount, useChainId, useReadContract } from "wagmi";
 import {
   ArrowRight,
   BadgeCheck,
@@ -45,6 +48,7 @@ import {
   RITUAL_TESTNET,
 } from "./lib/contracts";
 import { fetchLiveCovenantState, type LiveCovenantState } from "./lib/onchain";
+import { ritualTestnet } from "./lib/web3";
 
 type PageId = "overview" | "brief" | "firewall" | "bounty" | "agents" | "policy" | "inheritance" | "contracts" | "pitch";
 type LiveStatus = "loading" | "live" | "error";
@@ -61,6 +65,30 @@ type CovenantCase = {
   txHref?: string;
   confidence: number;
 };
+
+const kernelReadAbi = [
+  {
+    type: "function",
+    name: "nextAgentId",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "nextCheckId",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "owner",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "address" }],
+  },
+] as const;
 
 const routes: Array<{ id: PageId; label: string; icon: LucideIcon; kicker: string }> = [
   { id: "overview", label: "Command", icon: Home, kicker: "Control" },
@@ -280,6 +308,76 @@ function decisionKind(decision: string): CaseKind {
   if (decision === "Slashed") return "slashed";
   if (decision === "Inherited") return "revived";
   return "allowed";
+}
+
+function digestPayload(payload: unknown) {
+  return keccak256(stringToHex(JSON.stringify(payload)));
+}
+
+function bound(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function assessIntent({
+  spendCap,
+  intentSpend,
+  secretLock,
+  touchesSecret,
+  missedHeartbeats,
+  heartbeatLimit,
+  targetAllowed,
+  severity,
+}: {
+  spendCap: number;
+  intentSpend: number;
+  secretLock: boolean;
+  touchesSecret: boolean;
+  missedHeartbeats: number;
+  heartbeatLimit: number;
+  targetAllowed: boolean;
+  severity: string;
+}) {
+  const strictBoost = severity === "strict" ? 10 : severity === "quiet" ? -8 : 0;
+  const risk =
+    intentSpend * 2.2 +
+    (touchesSecret && secretLock ? 34 : 0) +
+    (!targetAllowed ? 26 : 0) +
+    Math.max(0, missedHeartbeats - heartbeatLimit + 1) * 18 +
+    strictBoost;
+
+  if (missedHeartbeats >= heartbeatLimit + 1) {
+    return {
+      kind: "revived" as CaseKind,
+      label: "INHERIT",
+      reason: `Heartbeat failed for ${missedHeartbeats} epochs; successor path opens before new execution.`,
+      confidence: bound(Math.round(72 + missedHeartbeats * 3), 78, 99),
+    };
+  }
+
+  if (intentSpend > spendCap * 1.75 || (!targetAllowed && touchesSecret)) {
+    return {
+      kind: "slashed" as CaseKind,
+      label: "SLASH",
+      reason: "The intent combines policy breach with high-risk authority, so bond consequences are triggered.",
+      confidence: bound(Math.round(risk), 78, 99),
+    };
+  }
+
+  if (intentSpend > spendCap || (secretLock && touchesSecret) || !targetAllowed) {
+    return {
+      kind: "blocked" as CaseKind,
+      label: "BLOCK",
+      reason: "The action is stopped before value, target authority, or secrets move.",
+      confidence: bound(Math.round(64 + risk / 3), 70, 96),
+    };
+  }
+
+  return {
+    kind: "allowed" as CaseKind,
+    label: "ALLOW",
+    reason: "The action stays inside signed policy limits and can move to execution.",
+    confidence: bound(100 - Math.round(risk / 3), 82, 100),
+  };
 }
 
 function caseFromLive(liveState: LiveCovenantState | null, liveStatus: LiveStatus, liveError: string | null): CovenantCase[] {
@@ -682,6 +780,40 @@ function FirewallPage({
   liveState: LiveCovenantState | null;
   liveStatus: LiveStatus;
 }) {
+  const [intentSpend, setIntentSpend] = useState(8);
+  const [targetAllowed, setTargetAllowed] = useState(true);
+  const [touchesSecret, setTouchesSecret] = useState(false);
+  const [missedHeartbeats, setMissedHeartbeats] = useState(0);
+  const simulated = assessIntent({
+    spendCap: 12,
+    intentSpend,
+    secretLock: true,
+    touchesSecret,
+    missedHeartbeats,
+    heartbeatLimit: 4,
+    targetAllowed,
+    severity: "balanced",
+  });
+  const simulatedReceipt = useMemo(
+    () =>
+      digestPayload({
+        intentSpend,
+        targetAllowed,
+        touchesSecret,
+        missedHeartbeats,
+        decision: simulated.label,
+        kernel: RITUAL_TESTNET.covenantKernel,
+      }),
+    [intentSpend, missedHeartbeats, simulated.label, targetAllowed, touchesSecret],
+  );
+  const simulatedSteps = [
+    ["Decode calldata", `${intentSpend}% treasury intent`],
+    ["Check target", targetAllowed ? "allowlist match" : "unknown target"],
+    ["Secret rule", touchesSecret ? "private key path touched" : "no secret access"],
+    ["Heartbeat", `${missedHeartbeats} missed epochs`],
+    ["Receipt", shortHash(simulatedReceipt, 10, 8)],
+  ];
+
   return (
     <PageShell>
       <section className="two-column firewall-layout">
@@ -709,6 +841,51 @@ function FirewallPage({
               <strong>{selected.confidence}%</strong>
             </div>
             <DecisionBadge kind={selected.kind} />
+          </div>
+          <div className={`intent-simulator ${classForKind(simulated.kind)}`}>
+            <div className="simulator-head">
+              <div>
+                <span>Local intent simulator</span>
+                <h3>{simulated.label} / {simulated.confidence}%</h3>
+              </div>
+              <DecisionBadge kind={simulated.kind} />
+            </div>
+            <div className="simulator-controls">
+              <label className="control-row compact-control">
+                <span>Treasury value</span>
+                <strong>{intentSpend}%</strong>
+                <input type="range" min="0" max="42" value={intentSpend} onChange={(event) => setIntentSpend(Number(event.target.value))} />
+              </label>
+              <label className="toggle-row compact-toggle">
+                <span>
+                  <ShieldCheck size={16} />
+                  Target allowlisted
+                </span>
+                <input type="checkbox" checked={targetAllowed} onChange={(event) => setTargetAllowed(event.target.checked)} />
+              </label>
+              <label className="toggle-row compact-toggle">
+                <span>
+                  <KeyRound size={16} />
+                  Touches secrets
+                </span>
+                <input type="checkbox" checked={touchesSecret} onChange={(event) => setTouchesSecret(event.target.checked)} />
+              </label>
+              <label className="control-row compact-control">
+                <span>Missed heartbeats</span>
+                <strong>{missedHeartbeats}</strong>
+                <input type="range" min="0" max="7" value={missedHeartbeats} onChange={(event) => setMissedHeartbeats(Number(event.target.value))} />
+              </label>
+            </div>
+            <p>{simulated.reason}</p>
+            <div className="simulator-steps">
+              {simulatedSteps.map(([label, value], index) => (
+                <div key={label}>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <strong>{label}</strong>
+                  <em>{value}</em>
+                </div>
+              ))}
+            </div>
           </div>
           <div className="trace-list">
             {(liveState?.txs ?? []).map((tx, index) => (
@@ -753,6 +930,38 @@ function FirewallPage({
 }
 
 function AgentsPage({ liveState, liveStatus, liveError }: { liveState: LiveCovenantState | null; liveStatus: LiveStatus; liveError: string | null }) {
+  const { address, isConnected } = useAccount();
+  const chainId = useChainId();
+  const { data: nextAgentId } = useReadContract({
+    address: RITUAL_TESTNET.covenantKernel as Address,
+    abi: kernelReadAbi,
+    chainId: ritualTestnet.id,
+    functionName: "nextAgentId",
+    query: {
+      refetchInterval: 15_000,
+    },
+  });
+  const { data: nextCheckId } = useReadContract({
+    address: RITUAL_TESTNET.covenantKernel as Address,
+    abi: kernelReadAbi,
+    chainId: ritualTestnet.id,
+    functionName: "nextCheckId",
+    query: {
+      refetchInterval: 15_000,
+    },
+  });
+  const { data: kernelOwner } = useReadContract({
+    address: RITUAL_TESTNET.covenantKernel as Address,
+    abi: kernelReadAbi,
+    chainId: ritualTestnet.id,
+    functionName: "owner",
+    query: {
+      refetchInterval: 30_000,
+    },
+  });
+  const connectedOwner = Boolean(address && liveState?.agent.owner && address.toLowerCase() === liveState.agent.owner.toLowerCase());
+  const walletRole = connectedOwner ? "live agent owner" : isConnected ? "observer wallet" : "wallet idle";
+  const chainLabel = chainId === ritualTestnet.id ? "Ritual ready" : isConnected ? `wrong chain ${chainId}` : "not connected";
   const liveAgents = liveState
     ? [
         {
@@ -788,6 +997,35 @@ function AgentsPage({ liveState, liveStatus, liveError }: { liveState: LiveCoven
 
   return (
     <PageShell>
+      <section className="wallet-command-panel">
+        <div className="wallet-command-copy">
+          <span>Wallet lens</span>
+          <h2>{walletRole}</h2>
+          <p>{isConnected ? `Connected ${shortHash(address ?? "", 8, 6)}. Kernel reads stay pointed at Ritual Chain Testnet.` : "Connect a wallet to compare it against the live registered agent."}</p>
+        </div>
+        <div className="wallet-connect-shell">
+          <ConnectButton />
+        </div>
+        <div className="wallet-read-grid">
+          <div>
+            <span>Network</span>
+            <strong>{chainLabel}</strong>
+          </div>
+          <div>
+            <span>Kernel owner</span>
+            <strong>{kernelOwner ? shortHash(kernelOwner, 8, 6) : liveStatus}</strong>
+          </div>
+          <div>
+            <span>Registered agents</span>
+            <strong>{nextAgentId ? Math.max(0, Number(nextAgentId) - 1) : liveStatus}</strong>
+          </div>
+          <div>
+            <span>On-chain checks</span>
+            <strong>{nextCheckId ? Math.max(0, Number(nextCheckId) - 1) : liveStatus}</strong>
+          </div>
+        </div>
+      </section>
+
       <section className="agent-command-grid">
         {liveAgents.map((agent) => (
           <article className="agent-passport" key={agent.name}>
@@ -883,6 +1121,37 @@ function PolicyStudioPage() {
   const [heartbeat, setHeartbeat] = useState(4);
   const [secretLock, setSecretLock] = useState(true);
   const [severity, setSeverity] = useState("balanced");
+  const [testSpend, setTestSpend] = useState(9);
+  const [testTargetAllowed, setTestTargetAllowed] = useState(true);
+  const [testSecretAccess, setTestSecretAccess] = useState(false);
+  const [testMissedHeartbeats, setTestMissedHeartbeats] = useState(0);
+
+  const policyDraft = useMemo(
+    () => ({
+      version: "covenant.policy.v1",
+      spendCapPercent: spend,
+      heartbeatFailureWindow: heartbeat,
+      secretRekeyRequired: secretLock,
+      severity,
+      cooldownWindows: severity === "strict" ? 5 : severity === "quiet" ? 1 : 3,
+      kernel: RITUAL_TESTNET.covenantKernel,
+    }),
+    [heartbeat, secretLock, severity, spend],
+  );
+  const policyHash = useMemo(() => digestPayload(policyDraft), [policyDraft]);
+  const policyCid = `ipfs://covenant/policy/${severity}-${policyHash.slice(2, 10)}`;
+  const policyJson = useMemo(() => JSON.stringify({ ...policyDraft, policyCid, policyHash }, null, 2), [policyCid, policyDraft, policyHash]);
+  const testDecision = assessIntent({
+    spendCap: spend,
+    intentSpend: testSpend,
+    secretLock,
+    touchesSecret: testSecretAccess,
+    missedHeartbeats: testMissedHeartbeats,
+    heartbeatLimit: heartbeat,
+    targetAllowed: testTargetAllowed,
+    severity,
+  });
+  const policyDownload = `data:application/json;charset=utf-8,${encodeURIComponent(policyJson)}`;
 
   return (
     <PageShell>
@@ -921,11 +1190,63 @@ function PolicyStudioPage() {
         <div className="policy-preview">
           <div className="policy-paper">
             <span>Signed Policy CID</span>
-            <h2>ipfs://covenant/policy/{severity}</h2>
+            <h2>{policyCid}</h2>
             <p>No spend above {spend}% of treasury in one action.</p>
             <p>Trigger inheritance after {heartbeat} missed heartbeat epochs.</p>
             <p>{secretLock ? "Secrets require DKMS re-key before successor activation." : "Successor receives public memory CID only."}</p>
             <p>Slashed agents enter a three-window cooldown.</p>
+            <div className="hash-strip">
+              <span>policyHash</span>
+              <code>{policyHash}</code>
+            </div>
+            <a className="receipt-download inline-download" href={policyDownload} download="ritual-covenant-policy.json">
+              <Download size={15} />
+              Export policy JSON
+            </a>
+          </div>
+          <div className={`policy-live-test ${classForKind(testDecision.kind)}`}>
+            <div className="simulator-head">
+              <div>
+                <span>Intent test</span>
+                <h3>{testDecision.label} / {testDecision.confidence}%</h3>
+              </div>
+              <DecisionBadge kind={testDecision.kind} />
+            </div>
+            <div className="simulator-controls">
+              <label className="control-row compact-control">
+                <span>Intent value</span>
+                <strong>{testSpend}%</strong>
+                <input type="range" min="0" max="42" value={testSpend} onChange={(event) => setTestSpend(Number(event.target.value))} />
+              </label>
+              <label className="toggle-row compact-toggle">
+                <span>
+                  <ShieldCheck size={16} />
+                  Target allowlisted
+                </span>
+                <input type="checkbox" checked={testTargetAllowed} onChange={(event) => setTestTargetAllowed(event.target.checked)} />
+              </label>
+              <label className="toggle-row compact-toggle">
+                <span>
+                  <KeyRound size={16} />
+                  Secret access
+                </span>
+                <input type="checkbox" checked={testSecretAccess} onChange={(event) => setTestSecretAccess(event.target.checked)} />
+              </label>
+              <label className="control-row compact-control">
+                <span>Heartbeat misses</span>
+                <strong>{testMissedHeartbeats}</strong>
+                <input type="range" min="0" max="7" value={testMissedHeartbeats} onChange={(event) => setTestMissedHeartbeats(Number(event.target.value))} />
+              </label>
+            </div>
+            <p>{testDecision.reason}</p>
+          </div>
+          <div className="policy-json-console">
+            <div className="terminal-head">
+              <FileCode2 size={17} />
+              <span>Policy artifact</span>
+              <strong>{shortHash(policyHash, 8, 6)}</strong>
+            </div>
+            <pre>{policyJson}</pre>
           </div>
           <div className="clause-grid">
             {clauses.map((clause, index) => (
@@ -942,6 +1263,28 @@ function PolicyStudioPage() {
 }
 
 function InheritancePage({ liveState, liveStatus }: { liveState: LiveCovenantState | null; liveStatus: LiveStatus }) {
+  const [plannerMisses, setPlannerMisses] = useState(3);
+  const [plannerReserve, setPlannerReserve] = useState(18);
+  const [plannerRekey, setPlannerRekey] = useState(true);
+  const recoveryOpen = plannerMisses >= 4;
+  const recoveryKind: CaseKind = recoveryOpen ? "revived" : plannerMisses >= 3 ? "blocked" : "allowed";
+  const recoveryHash = useMemo(
+    () =>
+      digestPayload({
+        agent: liveState?.agentId ?? "offline",
+        misses: plannerMisses,
+        reserve: plannerReserve,
+        rekey: plannerRekey,
+        successor: liveState?.agent.successor ?? "pending",
+      }),
+    [liveState?.agent.successor, liveState?.agentId, plannerMisses, plannerRekey, plannerReserve],
+  );
+  const plannerSteps = [
+    ["Heartbeat", recoveryOpen ? "failure threshold reached" : `${4 - plannerMisses} epochs remaining`],
+    ["Spend state", plannerMisses >= 3 ? "new risky intents frozen" : "active"],
+    ["Secret path", plannerRekey ? "successor re-key queued" : "memory CID only"],
+    ["Reserve", `${plannerReserve}% bond protected`],
+  ];
   const liveInheritanceSteps = liveState
     ? [
         {
@@ -1015,6 +1358,45 @@ function InheritancePage({ liveState, liveStatus }: { liveState: LiveCovenantSta
               <dd>{liveState ? liveState.agent.status : liveStatus}</dd>
             </div>
           </dl>
+        </div>
+      </section>
+      <section className={`recovery-planner ${classForKind(recoveryKind)}`}>
+        <div className="planner-copy">
+          <span>Recovery planner</span>
+          <h2>{recoveryOpen ? "Successor path opens." : "Agent remains active."}</h2>
+          <p>{recoveryOpen ? "Heartbeat failure is high enough to move the agent into inheritance handling." : "Policy keeps watching heartbeat and blocks early recovery."}</p>
+        </div>
+        <div className="planner-controls">
+          <label className="control-row compact-control">
+            <span>Missed heartbeat epochs</span>
+            <strong>{plannerMisses}</strong>
+            <input type="range" min="0" max="8" value={plannerMisses} onChange={(event) => setPlannerMisses(Number(event.target.value))} />
+          </label>
+          <label className="control-row compact-control">
+            <span>Bond reserve</span>
+            <strong>{plannerReserve}%</strong>
+            <input type="range" min="0" max="40" value={plannerReserve} onChange={(event) => setPlannerReserve(Number(event.target.value))} />
+          </label>
+          <label className="toggle-row compact-toggle">
+            <span>
+              <KeyRound size={16} />
+              Re-key secrets
+            </span>
+            <input type="checkbox" checked={plannerRekey} onChange={(event) => setPlannerRekey(event.target.checked)} />
+          </label>
+        </div>
+        <div className="planner-steps">
+          {plannerSteps.map(([label, value], index) => (
+            <div key={label}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <strong>{label}</strong>
+              <em>{value}</em>
+            </div>
+          ))}
+        </div>
+        <div className="hash-strip planner-hash">
+          <span>recovery receipt</span>
+          <code>{recoveryHash}</code>
         </div>
       </section>
     </PageShell>
@@ -1118,9 +1500,102 @@ function LiveContractProof({ liveState, liveStatus, liveError }: { liveState: Li
 }
 
 function ContractsPage({ liveState, liveStatus, liveError }: { liveState: LiveCovenantState | null; liveStatus: LiveStatus; liveError: string | null }) {
+  const { address, isConnected } = useAccount();
+  const [playgroundTarget, setPlaygroundTarget] = useState<"kernel" | "guardian" | "bounty">("kernel");
+  const [playgroundMethod, setPlaygroundMethod] = useState(0);
+  const [playgroundValues, setPlaygroundValues] = useState<Record<string, string>>({});
+  const playgroundGroups = {
+    kernel: { label: "CovenantKernel", address: RITUAL_TESTNET.covenantKernel, methods: contractMethods },
+    guardian: { label: "GuardianAgent", address: GUARDIAN_AGENT.address, methods: guardianMethods },
+    bounty: { label: "BountyJudge", address: BOUNTY_JUDGE.address, methods: bountyJudgeMethods },
+  };
+  const activeGroup = playgroundGroups[playgroundTarget];
+  const activeMethod = activeGroup.methods[bound(playgroundMethod, 0, activeGroup.methods.length - 1)];
+  const paramValues = activeMethod.params.map((param) => playgroundValues[`${playgroundTarget}:${activeMethod.name}:${param}`] ?? "");
+  const methodSignature = `${activeMethod.name}(${activeMethod.params.map((param) => param.split(" ")[0]).join(",")})`;
+  const calldataPreview = useMemo(
+    () =>
+      digestPayload({
+        contract: activeGroup.address,
+        method: activeMethod.name,
+        params: paramValues,
+        caller: address ?? "not-connected",
+      }),
+    [activeGroup.address, activeMethod.name, address, paramValues],
+  );
+
   return (
     <PageShell>
       <LiveContractProof liveState={liveState} liveStatus={liveStatus} liveError={liveError} />
+      <section className="abi-playground">
+        <div className="abi-copy">
+          <span>ABI playground</span>
+          <h2>{activeGroup.label}</h2>
+          <p>{isConnected ? `Caller ${shortHash(address ?? "", 8, 6)} is ready for wallet-backed testing.` : "Read the ABI surface and prepare calls before connecting a wallet."}</p>
+          <div className="wallet-connect-shell">
+            <ConnectButton />
+          </div>
+        </div>
+        <div className="abi-controls">
+          <div className="segmented compact-segmented" role="group" aria-label="Contract target">
+            {(["kernel", "guardian", "bounty"] as const).map((target) => (
+              <button
+                key={target}
+                className={playgroundTarget === target ? "active" : ""}
+                onClick={() => {
+                  setPlaygroundTarget(target);
+                  setPlaygroundMethod(0);
+                }}
+              >
+                {playgroundGroups[target].label}
+              </button>
+            ))}
+          </div>
+          <label className="form-field abi-select">
+            <span>Method</span>
+            <select value={playgroundMethod} onChange={(event) => setPlaygroundMethod(Number(event.target.value))}>
+              {activeGroup.methods.map((method, index) => (
+                <option value={index} key={method.name}>
+                  {method.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="abi-param-editor">
+            {activeMethod.params.length > 0 ? (
+              activeMethod.params.map((param) => {
+                const key = `${playgroundTarget}:${activeMethod.name}:${param}`;
+                return (
+                  <label className="form-field" key={param}>
+                    <span>{param}</span>
+                    <input value={playgroundValues[key] ?? ""} onChange={(event) => setPlaygroundValues((current) => ({ ...current, [key]: event.target.value }))} />
+                  </label>
+                );
+              })
+            ) : (
+              <div className="empty-param">No parameters.</div>
+            )}
+          </div>
+        </div>
+        <div className="abi-output">
+          <div className="offline-code">
+            <span>target</span>
+            <code>{activeGroup.address}</code>
+          </div>
+          <div className="offline-code">
+            <span>signature</span>
+            <code>{methodSignature}</code>
+          </div>
+          <div className="offline-code">
+            <span>prepared hash</span>
+            <code>{calldataPreview}</code>
+          </div>
+          <a className="receipt-download inline-download" href={`${RITUAL_TESTNET.explorerUrl}/address/${activeGroup.address}`} target="_blank" rel="noreferrer">
+            <ExternalLink size={15} />
+            Open contract
+          </a>
+        </div>
+      </section>
       <section className="guardian-contract-panel">
         <div className="guardian-contract-head">
           <div>
@@ -1462,6 +1937,11 @@ function BountyJudgePage() {
 }
 
 function PitchPage() {
+  const [selectedPitch, setSelectedPitch] = useState(pitchRows[0][0]);
+  const selectedPitchRow = pitchRows.find(([category]) => category === selectedPitch) ?? pitchRows[0];
+  const pitchIndex = pitchRows.findIndex(([category]) => category === selectedPitchRow[0]);
+  const edgeScore = 92 - pitchIndex * 3;
+
   return (
     <PageShell>
       <section className="pitch-grid">
@@ -1493,6 +1973,25 @@ function PitchPage() {
               <span>{covenant}</span>
             </div>
           ))}
+        </div>
+      </section>
+      <section className="pitch-interactive">
+        <div className="pitch-interactive-copy">
+          <span>Differentiator lens</span>
+          <h2>{selectedPitchRow[0]}</h2>
+          <p>{selectedPitchRow[2]}</p>
+        </div>
+        <div className="pitch-choice-grid">
+          {pitchRows.map(([category]) => (
+            <button key={category} className={selectedPitch === category ? "active" : ""} onClick={() => setSelectedPitch(category)}>
+              {category}
+            </button>
+          ))}
+        </div>
+        <div className="pitch-score">
+          <span>Edge score</span>
+          <strong>{edgeScore}/100</strong>
+          <em>Against: {selectedPitchRow[1]}</em>
         </div>
       </section>
       <section className="primitive-grid compact">
