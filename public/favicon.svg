@@ -1,15 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Ritual Covenant">
   <rect width="64" height="64" rx="14" fill="#0b6f43"/>
-  <rect x="4" y="4" width="56" height="56" rx="11" fill="none" stroke="#f4fff7" stroke-opacity=".18" stroke-width="2"/>
-  <g fill="none" stroke="#f4fff7" stroke-linecap="square" stroke-linejoin="miter" stroke-width="5">
-    <path d="M32 8 44 20 32 32 20 20 32 8Z"/>
-    <path d="M8 32 20 20 32 32 20 44 8 32Z"/>
-    <path d="M56 32 44 20 32 32 44 44 56 32Z"/>
-    <path d="M32 56 20 44 32 32 44 44 32 56Z"/>
-    <path d="M20 20h12v12"/>
-    <path d="M44 20v12H32"/>
-    <path d="M20 44V32h12"/>
-    <path d="M44 44H32V32"/>
-  </g>
-  <path d="M47 47h6m-3-3v6" stroke="#ffd84d" stroke-linecap="round" stroke-width="3"/>
+  <path fill="#f7fff8" d="M32 8 44 20 38 26 32 20 26 26 20 20 32 8Z"/>
+  <path fill="#f7fff8" d="M56 32 44 44 38 38 44 32 38 26 44 20 56 32Z"/>
+  <path fill="#f7fff8" d="M32 56 20 44 26 38 32 44 38 38 44 44 32 56Z"/>
+  <path fill="#f7fff8" d="M8 32 20 20 26 26 20 32 26 38 20 44 8 32Z"/>
+  <rect x="27" y="27" width="10" height="10" rx="2" fill="#f7fff8" transform="rotate(45 32 32)"/>
 </svg>
