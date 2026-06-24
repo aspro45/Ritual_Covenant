@@ -25,6 +25,7 @@ import {
   XCircle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { BountyWorkbench } from "./components/BountyWorkbench";
 import { CovenantScene } from "./components/CovenantScene";
 import {
   clauses,
@@ -1405,6 +1406,8 @@ function BountyJudgePage() {
           ))}
         </div>
       </section>
+
+      <BountyWorkbench />
 
       <section className="primitive-grid compact">
         {bountyArchitecture.map(({ name, icon: Icon, text }) => (
