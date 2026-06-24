@@ -2,6 +2,8 @@
 
 `CovenantKernel.sol` is the live policy kernel for the Ritual Covenant project. `CovenantGuardianAgent.sol` is the new companion agent contract: it can own a kernel agent, keep the heartbeat alive, submit guarded intents, preview deterministic decisions, and write kernel receipts when trusted as an attestor.
 
+`CommitRevealBountyJudge.sol` is the privacy-preserving bounty module added for the AI Bounty Judge assignment. It keeps Ritual Covenant's policy theme, but applies it to fair submissions: answers are hidden during commit, verified during reveal, batch-judged once, and finalized from the eligible revealed set.
+
 ## Why It Stands Out
 
 - One kernel, four internal lanes: agent registry, bonded value, intent firewall, heartbeat inheritance.
@@ -14,6 +16,7 @@
 - `executeWill` creates a stored inheritance receipt and emits both `DecisionRecorded` and `WillExecuted`.
 - Direct ETH transfers revert so value enters through `registerAgent` or `fundAgent` and stays accounted to an agent bond.
 - No OpenZeppelin imports and no external dependencies, so it can be pasted directly into Remix.
+- Commit-reveal bounty judging is included as a standalone module with the required assignment functions.
 
 ## Guardian Agent Layer
 
@@ -27,6 +30,41 @@
 6. `executeGuardianApproved` executes only after the kernel stores an `Allowed` receipt.
 
 The Guardian uses configured value limits, target allowlists, calldata revocations, heartbeat checks, and kernel agent status. This keeps policy decisions deterministic and reviewable.
+
+## Commit-Reveal Bounty Judge Layer
+
+`CommitRevealBountyJudge` adds the required workshop flow without changing the deployed Covenant kernel:
+
+1. `submitCommitment(uint256 bountyId, bytes32 commitment)` stores only the answer commitment during the submission phase.
+2. `revealAnswer(uint256 bountyId, string calldata answer, bytes32 salt)` verifies `keccak256(abi.encode(answer, salt, msg.sender, bountyId))`.
+3. `judgeAll(uint256 bountyId, bytes calldata llmInput)` anchors one canonical batch LLM input hash for all eligible revealed answers.
+4. `finalizeWinner(uint256 bountyId, uint256 winnerIndex)` finalizes a winner from the revealed eligible set.
+
+Extra helper surface:
+
+```solidity
+createBounty(string promptCid, bytes32 promptHash, uint64 commitDeadline, uint64 revealDeadline)
+setJudge(address judge, bool trusted)
+computeCommitment(string answer, bytes32 salt, address participant, uint256 bountyId)
+getRevealedSubmissionIds(uint256 bountyId)
+getRevealedSubmissionCount(uint256 bountyId)
+```
+
+Security cases covered locally:
+
+- empty or duplicate commitment
+- reveal before commit deadline
+- commit after deadline
+- reveal without commitment
+- copied answer with wrong sender binding
+- wrong salt
+- duplicate reveal
+- judge before reveal deadline
+- untrusted judge
+- invalid winner index
+- double finalize
+
+Advanced Ritual-native note: the commit-reveal version reveals plaintext on-chain after the commit phase. A Ritual TEE version can keep encrypted answers off-chain by CID, decrypt all eligible answers inside a TEE-backed batch judge, and store only hashes, receipts, and final result on-chain.
 
 ## Main Flow
 
@@ -46,6 +84,7 @@ Before spending faucet fees, run:
 npm.cmd run contract:compile
 npm.cmd run contract:test
 npm.cmd run contract:guardian:test
+npm.cmd run contract:bounty:test
 npm.cmd run contract:gas
 ```
 
@@ -70,6 +109,11 @@ Current local coverage checks:
 - Guardian allowlist/value-limit preview decisions
 - Guardian-written kernel decision receipts
 - Guardian-approved execution from its own kernel bond
+- commit-reveal bounty creation
+- hidden commitment submission
+- reveal verification against answer, salt, sender, and bounty ID
+- single batch LLM input hash
+- winner finalization from eligible reveals only
 
 ## Deploy Later
 
@@ -158,6 +202,15 @@ submitGuardianIntent(address target, uint256 value, bytes callData, uint64 ttl, 
 previewDecision(uint256 checkId)
 watchKernelIntent(uint256 checkId)
 executeGuardianApproved(uint256 checkId, bytes callData)
+```
+
+Bounty judge calls:
+
+```solidity
+submitCommitment(uint256 bountyId, bytes32 commitment)
+revealAnswer(uint256 bountyId, string answer, bytes32 salt)
+judgeAll(uint256 bountyId, bytes llmInput)
+finalizeWinner(uint256 bountyId, uint256 winnerIndex)
 ```
 
 ## Guardian Deploy Safety

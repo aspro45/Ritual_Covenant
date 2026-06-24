@@ -10,10 +10,11 @@
     "contract:deploy:ritual": "node scripts/deploy-ritual.cjs",
     "contract:gas": "node scripts/contract-gas-estimate.cjs",
     "contract:guardian:test": "node scripts/guardian-tests.cjs",
+    "contract:bounty:test": "node scripts/bounty-tests.cjs",
     "contract:deploy:guardian": "node scripts/deploy-guardian.cjs",
     "contract:live": "node scripts/live-ritual-flow.cjs",
     "contract:guardian:live": "node scripts/live-guardian-flow.cjs",
-    "contract:test": "node scripts/contract-tests.cjs && node scripts/guardian-tests.cjs",
+    "contract:test": "node scripts/contract-tests.cjs && node scripts/guardian-tests.cjs && node scripts/bounty-tests.cjs",
     "preview": "vite preview --host 127.0.0.1",
     "serve": "node scripts/serve-dist.mjs"
   },

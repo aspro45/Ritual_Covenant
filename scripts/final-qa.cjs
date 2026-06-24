@@ -3,7 +3,7 @@ const path = require("path");
 
 const baseUrl = process.env.QA_BASE_URL || "http://127.0.0.1:5178/";
 const outputsDir = path.resolve(process.cwd(), "..", "..", "outputs");
-const routes = ["overview", "brief", "firewall", "agents", "policy", "inheritance", "contracts", "pitch"];
+const routes = ["overview", "brief", "firewall", "bounty", "agents", "policy", "inheritance", "contracts", "pitch"];
 const viewports = [
   {
     name: "desktop",

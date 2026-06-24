@@ -36,6 +36,8 @@ import {
 import {
   contractIntegrationChecklist,
   contractMethods,
+  BOUNTY_JUDGE,
+  bountyJudgeMethods,
   GUARDIAN_AGENT,
   GUARDIAN_LIVE_PROOF,
   guardianMethods,
@@ -43,7 +45,7 @@ import {
 } from "./lib/contracts";
 import { fetchLiveCovenantState, type LiveCovenantState } from "./lib/onchain";
 
-type PageId = "overview" | "brief" | "firewall" | "agents" | "policy" | "inheritance" | "contracts" | "pitch";
+type PageId = "overview" | "brief" | "firewall" | "bounty" | "agents" | "policy" | "inheritance" | "contracts" | "pitch";
 type LiveStatus = "loading" | "live" | "error";
 
 type CovenantCase = {
@@ -63,6 +65,7 @@ const routes: Array<{ id: PageId; label: string; icon: LucideIcon; kicker: strin
   { id: "overview", label: "Command", icon: Home, kicker: "Control" },
   { id: "brief", label: "Brief", icon: ScrollText, kicker: "Read" },
   { id: "firewall", label: "Firewall", icon: ShieldAlert, kicker: "Gate" },
+  { id: "bounty", label: "Bounty Judge", icon: LockKeyhole, kicker: "Commit-Reveal" },
   { id: "agents", label: "Agents", icon: RadioTower, kicker: "Fleet" },
   { id: "policy", label: "Policy Studio", icon: BookOpenCheck, kicker: "Limits" },
   { id: "inheritance", label: "Inheritance", icon: HeartPulse, kicker: "Recovery" },
@@ -134,6 +137,10 @@ const pageCopy: Record<PageId, { title: string; subtitle: string }> = {
     title: "Intent Enforcement",
     subtitle: "Risky agent actions are checked before funds, data keys, or authority move.",
   },
+  bounty: {
+    title: "Commit-Reveal Bounty",
+    subtitle: "Hidden submissions, verified reveals, batch AI judging, and public winner finalization.",
+  },
   agents: {
     title: "Protected Agent Fleet",
     subtitle: "Every autonomous actor gets liveness, wallet, secret, and policy telemetry.",
@@ -185,6 +192,7 @@ const inheritanceSteps = [
 
 const pitchRows = [
   ["AI Judge", "Human disputes", "Covenant enforces agent actions before execution."],
+  ["Bounty Judge", "Public answers get copied", "Commit-reveal hides answers until the reveal window."],
   ["Dead-Man Switch", "Human estate transfer", "Covenant recovers autonomous agents and their operating state."],
   ["Agent Dashboard", "Read-only monitoring", "Covenant can block, slash, freeze, and inherit."],
   ["Bounty Agent", "Task escrow", "Covenant governs the agent's own spending, secrets, and authority."],
@@ -241,6 +249,19 @@ const briefFlow = [
   "A proposed action enters the intent gate before value moves.",
   "The policy decision is written as a machine-readable receipt.",
   "Allowed actions execute; unsafe actions can be blocked, slashed, or inherited.",
+];
+
+const bountyFlow = [
+  "Builder submits only a commitment hash during the commit phase.",
+  "After the deadline, the builder reveals the answer and salt.",
+  "The contract verifies the reveal against sender and bounty ID.",
+  "A single batch LLM input is anchored before the winner is finalized.",
+];
+
+const bountyArchitecture = [
+  { name: "Hidden first", icon: LockKeyhole, text: "Answers are not public during the submission window." },
+  { name: "Verified reveal", icon: BadgeCheck, text: "Wrong salts, copied answers, and missing commits are rejected." },
+  { name: "Batch judging", icon: Workflow, text: "The AI receives one canonical set of eligible revealed answers." },
 ];
 
 function classForKind(kind: CaseKind) {
@@ -1312,6 +1333,106 @@ function BriefPage({
   );
 }
 
+function BountyJudgePage() {
+  return (
+    <PageShell>
+      <section className="brief-layout">
+        <article className="brief-article">
+          <span className="eyebrow">
+            <LockKeyhole size={16} />
+            Privacy-preserving bounty
+          </span>
+          <h1>Covenant now protects bounty answers before AI judging.</h1>
+          <p className="brief-lede">
+            The new module keeps submissions hidden during the commit phase, verifies every reveal on-chain,
+            and anchors one batch input for fair AI judging.
+          </p>
+          <div className="brief-meta" aria-label="Bounty judge contract links">
+            <a href="https://github.com/aspro45/Ritual_Covenant/blob/main/contracts/CommitRevealBountyJudge.sol" target="_blank" rel="noreferrer">
+              Solidity <ExternalLink size={14} />
+            </a>
+            <a href="https://github.com/aspro45/Ritual_Covenant/blob/main/scripts/bounty-tests.cjs" target="_blank" rel="noreferrer">
+              Tests <ExternalLink size={14} />
+            </a>
+          </div>
+        </article>
+
+        <aside className="brief-author">
+          <img src={ritualAssets.logo} alt="" />
+          <span>{BOUNTY_JUDGE.status}</span>
+          <h3>{BOUNTY_JUDGE.name}</h3>
+          <p>{BOUNTY_JUDGE.purpose}</p>
+          <code>{BOUNTY_JUDGE.testCommand}</code>
+        </aside>
+      </section>
+
+      <section className="brief-proof">
+        <div>
+          <span>Lifecycle</span>
+          <h2>Commit first, reveal later, judge once.</h2>
+        </div>
+        <div className="brief-flow">
+          {bountyFlow.map((item, index) => (
+            <div className="brief-flow-step" key={item}>
+              <strong>{String(index + 1).padStart(2, "0")}</strong>
+              <p>{item}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="primitive-grid compact">
+        {bountyArchitecture.map(({ name, icon: Icon, text }) => (
+          <article className="primitive-item" key={name}>
+            <Icon size={22} />
+            <h3>{name}</h3>
+            <p>{text}</p>
+            <strong>Assignment-ready</strong>
+          </article>
+        ))}
+      </section>
+
+      <section className="terminal-panel guardian-console">
+        <div className="terminal-head">
+          <TerminalSquare size={17} />
+          <span>Bounty ABI</span>
+          <strong>commit-reveal</strong>
+        </div>
+        <div className="method-stack guardian-methods" aria-label="Bounty judge methods">
+          {bountyJudgeMethods.map((method, index) => (
+            <article className="method-card" key={method.name}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <div>
+                <div className="method-title-row">
+                  <code>{method.name}</code>
+                  <strong>external</strong>
+                </div>
+                <div className="param-list">
+                  {method.params.map((param) => (
+                    <em key={param}>{param}</em>
+                  ))}
+                </div>
+                <p>{method.purpose}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="brief-proof live">
+        <div>
+          <span>Ritual-native extension</span>
+          <h2>Encrypted answers can stay inside a TEE-backed batch judge.</h2>
+          <p>{BOUNTY_JUDGE.reflection}</p>
+        </div>
+        <a className="brief-proof-link" href="https://docs.ritualfoundation.org/" target="_blank" rel="noreferrer">
+          Ritual docs <ExternalLink size={16} />
+        </a>
+      </section>
+    </PageShell>
+  );
+}
+
 function PitchPage() {
   return (
     <PageShell>
@@ -1478,6 +1599,7 @@ export default function App() {
         {activePage === "firewall" && (
           <FirewallPage cases={liveCases} selected={selected} onSelect={setSelectedCaseId} liveState={liveState} liveStatus={liveStatus} />
         )}
+        {activePage === "bounty" && <BountyJudgePage />}
         {activePage === "agents" && <AgentsPage liveState={liveState} liveStatus={liveStatus} liveError={liveError} />}
         {activePage === "brief" && <BriefPage liveState={liveState} liveStatus={liveStatus} go={go} />}
         {activePage === "policy" && <PolicyStudioPage />}

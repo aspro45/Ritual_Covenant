@@ -52,6 +52,7 @@ export const contractIntegrationChecklist = [
   "Run npm.cmd run contract:compile and npm.cmd run contract:test before spending faucet fees.",
   "CovenantKernel is live on Ritual Chain Testnet at 0x4086710799f9d1Cb1eDb4D0a64522F00A5790270.",
   "CovenantGuardianAgent is live at 0xC5804673c09e0b492bc2371892c8c0270ef0878E after local tests, gas estimates, and dry-run preflight.",
+  "CommitRevealBountyJudge is included as an assignment-ready module with local commit/reveal/judging tests.",
   "Use the explorer to verify deployment tx 0xdd17daee2f10ec9489898b5ff3660cdfd11942223c2a167d99f404b09322cd30.",
   "Live smoke proof executed agent #1 check #1 through tx 0xc2cfd5ee8d7e0106dd9a3067423731979e8f9c4b907b5f1e5a0762f1877e05fa.",
   "Point the frontend event feed at AgentRegistered, IntentSubmitted, DecisionRecorded, and WillExecuted.",
@@ -126,6 +127,18 @@ export const GUARDIAN_LIVE_PROOF = {
   ],
 };
 
+export const BOUNTY_JUDGE = {
+  name: "CommitRevealBountyJudge",
+  status: "local tested",
+  sourcePath: "CommitRevealBountyJudge.sol",
+  testCommand: "npm.cmd run contract:bounty:test",
+  compileCommand: "npm.cmd run contract:compile",
+  purpose:
+    "A privacy-preserving bounty module where builders commit hidden answers first, reveal only after the commit window closes, and AI judging consumes one verified batch of eligible answers.",
+  reflection:
+    "Commitments, deadlines, revealed answer hashes, judge receipts, and the final winner should be public. Raw answers stay hidden during the submission phase so participants cannot copy each other. In the advanced Ritual-native path, plaintext should exist only inside the participant client and Ritual TEE batch judge until a public result is ready.",
+};
+
 export const contractMethods = [
   {
     name: "registerAgent",
@@ -184,5 +197,28 @@ export const guardianMethods = [
     name: "executeGuardianApproved",
     params: ["uint256 checkId", "bytes callData"],
     purpose: "Executes an approved intent from the Guardian agent's bonded kernel balance.",
+  },
+];
+
+export const bountyJudgeMethods = [
+  {
+    name: "submitCommitment",
+    params: ["uint256 bountyId", "bytes32 commitment"],
+    purpose: "Stores only the commitment hash while answers remain hidden during the submission phase.",
+  },
+  {
+    name: "revealAnswer",
+    params: ["uint256 bountyId", "string answer", "bytes32 salt"],
+    purpose: "Verifies keccak256(abi.encode(answer, salt, msg.sender, bountyId)) against the stored commitment.",
+  },
+  {
+    name: "judgeAll",
+    params: ["uint256 bountyId", "bytes llmInput"],
+    purpose: "Anchors one canonical batch LLM input hash for all valid revealed answers.",
+  },
+  {
+    name: "finalizeWinner",
+    params: ["uint256 bountyId", "uint256 winnerIndex"],
+    purpose: "Finalizes a winner only from the revealed eligible submission set.",
   },
 ];

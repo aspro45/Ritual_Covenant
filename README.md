@@ -75,6 +75,7 @@ Main contracts:
 ```text
 contracts/CovenantKernel.sol          live policy kernel
 contracts/CovenantGuardianAgent.sol   tested companion agent contract
+contracts/CommitRevealBountyJudge.sol privacy-preserving bounty judge module
 ```
 
 Core external surface:
@@ -110,6 +111,57 @@ Important implementation notes:
 - `executeGuardianApproved` executes only after the kernel stores an `Allowed` receipt.
 
 The live Guardian flow was executed on Ritual Chain Testnet: the Guardian was trusted as a kernel attestor, allowlisted the live sink target, registered itself as kernel agent `#2`, submitted check `#2`, recorded an `Allowed` receipt, and executed `0.001 RITUAL` through the kernel.
+
+## Privacy-Preserving AI Bounty Judge
+
+The repository now includes an assignment-ready commit-reveal module that extends the Covenant idea into fair bounty judging. It does not replace `CovenantKernel`; it adds a focused bounty surface where participants hide answers during the submission phase and reveal them only after copying is no longer useful.
+
+Required contract functions:
+
+```solidity
+submitCommitment(uint256 bountyId, bytes32 commitment)
+revealAnswer(uint256 bountyId, string calldata answer, bytes32 salt)
+judgeAll(uint256 bountyId, bytes calldata llmInput)
+finalizeWinner(uint256 bountyId, uint256 winnerIndex)
+```
+
+Lifecycle:
+
+1. A bounty creator opens a bounty with a prompt CID, prompt hash, commit deadline, and reveal deadline.
+2. Participants submit only `bytes32 commitment`.
+3. After the commit deadline, participants reveal `answer` and `salt`.
+4. The contract checks `keccak256(abi.encode(answer, salt, msg.sender, bountyId))`.
+5. Only valid revealed submissions become eligible for judging.
+6. `judgeAll` anchors one canonical batch LLM input hash for all eligible answers.
+7. `finalizeWinner` selects a winner from the eligible revealed set.
+
+Test plan:
+
+- reject empty commitments
+- reject duplicate commitments
+- reject early reveals
+- reject late commitments
+- reject reveals without prior commitments
+- reject wrong salt or copied answer
+- accept valid reveals after the commit deadline
+- track eligible revealed submission IDs
+- reject judging before the reveal deadline
+- restrict judging to the bounty creator or trusted judge
+- anchor a single batch LLM input hash
+- reject invalid winner index and double finalization
+
+Ritual-native hidden submission architecture:
+
+- The required commit-reveal track stores commitments on-chain and reveals plaintext on-chain after the commit phase.
+- The advanced Ritual path keeps encrypted answers off-chain or in encrypted calldata/storage until a TEE-backed Ritual job receives the batch.
+- Plaintext should exist only in the participant client before submission and inside the TEE-backed batch judge during scoring.
+- On-chain storage should hold bounty metadata, commitments, reveal eligibility, ciphertext hashes, batch input hash, result hash, and final winner.
+- Off-chain storage can hold encrypted answer blobs by CID.
+- The LLM should receive one batch containing the prompt, all eligible encrypted submissions after decryption, scoring rubric, and participant IDs, not one call per answer.
+
+Reflection: what should be public, hidden, AI-decided, or human-decided?
+
+The bounty rules, deadlines, commitment hashes, reveal validity, judge receipt, and final winner should be public so anyone can audit the process. Answers should stay hidden during the submission phase because public answers create an unfair copying race. In the basic commit-reveal version, answers become public during reveal so the community can verify eligibility. In a stronger Ritual-native version, plaintext answers should stay inside a TEE-backed batch judge until the judging result is ready. AI should score submissions against the published rubric and produce a ranked recommendation. Humans should decide whether the rubric is fair, whether the bounty should be cancelled for abuse, and whether edge cases need review. The contract should enforce deadlines, eligibility, and finalization so neither AI nor humans can quietly change the rules after participants submit.
 
 ## Frontend
 
@@ -174,6 +226,12 @@ Run only the Guardian agent suite:
 npm run contract:guardian:test
 ```
 
+Run only the commit-reveal bounty suite:
+
+```bash
+npm run contract:bounty:test
+```
+
 Estimate gas:
 
 ```bash
@@ -215,6 +273,7 @@ Current verification status:
 
 - Contract compile: pass
 - Contract tests: pass
+- Commit-reveal bounty tests: pass
 - Gas estimate: pass
 - Live Ritual flow: pass
 - Live Guardian flow: pass
@@ -250,6 +309,7 @@ The frontend uses public Ritual RPC and public contract addresses. No private ke
 contracts/
   CovenantKernel.sol          Solidity policy kernel
   CovenantGuardianAgent.sol   Agent companion and deterministic attestor
+  CommitRevealBountyJudge.sol Commit-reveal bounty judging module
   README.md                   Contract handoff details
 
 src/
@@ -261,6 +321,7 @@ src/
 scripts/
   contract-tests.cjs          Local contract test suite
   guardian-tests.cjs          Local Guardian agent test suite
+  bounty-tests.cjs            Local commit-reveal bounty test suite
   deploy-ritual.cjs           Ritual testnet deploy script
   deploy-guardian.cjs         Guardian deploy preflight/deploy script
   live-ritual-flow.cjs        Live on-chain smoke flow

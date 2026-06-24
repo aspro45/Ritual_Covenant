@@ -105,4 +105,9 @@ export const contractModules = [
     icon: RadioTower,
     purpose: "Owns a kernel agent, keeps heartbeat, submits guarded intents, and writes deterministic policy receipts.",
   },
+  {
+    name: "Bounty Judge",
+    icon: Gavel,
+    purpose: "Adds commit-reveal submissions, eligible reveal tracking, batch AI judging, and winner finalization.",
+  },
 ];

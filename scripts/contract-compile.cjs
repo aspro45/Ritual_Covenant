@@ -11,6 +11,9 @@ const sources = {
   "contracts/CovenantGuardianAgent.sol": {
     content: fs.readFileSync(path.resolve(process.cwd(), "contracts", "CovenantGuardianAgent.sol"), "utf8"),
   },
+  "contracts/CommitRevealBountyJudge.sol": {
+    content: fs.readFileSync(path.resolve(process.cwd(), "contracts", "CommitRevealBountyJudge.sol"), "utf8"),
+  },
 };
 
 const input = {
@@ -44,6 +47,7 @@ fs.mkdirSync(outputsDir, { recursive: true });
 const contracts = [
   { source: "contracts/CovenantKernel.sol", name: "CovenantKernel" },
   { source: "contracts/CovenantGuardianAgent.sol", name: "CovenantGuardianAgent" },
+  { source: "contracts/CommitRevealBountyJudge.sol", name: "CommitRevealBountyJudge" },
 ];
 
 const artifacts = contracts.map(({ source, name }) => {
