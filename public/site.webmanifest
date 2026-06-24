@@ -1,0 +1,23 @@
+{
+  "name": "Ritual Covenant",
+  "short_name": "Covenant",
+  "description": "A live on-chain policy firewall for autonomous agents on Ritual Chain Testnet.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#030806",
+  "theme_color": "#0b6f43",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/ritual/ritual-logo.jpg",
+      "sizes": "400x400",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}
