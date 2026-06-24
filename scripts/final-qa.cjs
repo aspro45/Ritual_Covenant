@@ -291,12 +291,16 @@ async function inspectRoute(page, route) {
   await page.goto(`${baseUrl}#overview`, { waitUntil: "networkidle" });
   await page.waitForTimeout(900);
   const beforeInteraction = await sampleCanvas(page);
-  const inheritanceButton = page.getByRole("button", { name: /trigger inheritance/i }).first();
+  const inheritanceButton = page.getByRole("button", { name: /inheritance/i }).first();
   let clickedInheritance = false;
+  let inheritanceRouteActive = false;
 
   try {
     await inheritanceButton.click({ timeout: 2500 });
     clickedInheritance = true;
+    inheritanceRouteActive = await page.evaluate(
+      () => window.location.hash === "#inheritance" && document.body.innerText.includes("Machine Inheritance"),
+    );
   } catch {
     clickedInheritance = false;
   }
@@ -363,8 +367,8 @@ async function inspectRoute(page, route) {
     Math.abs((afterInteraction.checksum || 0) - (beforeInteraction.checksum || 0)) +
     Math.abs((afterInteraction.greenOrCyan || 0) - (beforeInteraction.greenOrCyan || 0));
 
-  if (!clickedInheritance) {
-    failures.push("Inheritance trigger button was not clickable.");
+  if (!clickedInheritance || !inheritanceRouteActive) {
+    failures.push("Inheritance navigation was not clickable.");
   }
 
   if (interactionDelta < 1) {
@@ -385,7 +389,7 @@ async function inspectRoute(page, route) {
     ]),
     desktopCanvas,
     mobileCanvas,
-    inheritanceInteraction: { clickedInheritance, interactionDelta, beforeInteraction, afterInteraction },
+    inheritanceInteraction: { clickedInheritance, inheritanceRouteActive, interactionDelta, beforeInteraction, afterInteraction },
     failures,
   };
 
