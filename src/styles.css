@@ -3335,6 +3335,183 @@ body {
   color: var(--paper-ink);
 }
 
+.bounty-layout {
+  grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.42fr);
+}
+
+.bounty-hero-panel {
+  min-height: 500px;
+  background:
+    linear-gradient(90deg, rgba(5, 8, 6, 0.96), rgba(5, 8, 6, 0.68) 43%, rgba(5, 8, 6, 0.12)),
+    linear-gradient(180deg, rgba(5, 8, 6, 0.12), rgba(5, 8, 6, 0.78)),
+    url("/ritual/ritual-bounty-judge-hero.png") center / cover no-repeat;
+}
+
+.bounty-hero-panel h1 {
+  max-width: 720px;
+  font-size: clamp(2.35rem, 5vw, 5.15rem);
+  line-height: 0.96;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.bounty-hero-panel .brief-lede {
+  max-width: 620px;
+  color: rgba(255, 248, 223, 0.9);
+  font-weight: 720;
+}
+
+.bounty-contract-card,
+.bounty-visual-proof {
+  border: 2px solid var(--black);
+  border-radius: 6px;
+  box-shadow:
+    5px 5px 0 rgba(0, 0, 0, 0.58),
+    inset 0 1px 0 rgba(255, 248, 223, 0.08);
+}
+
+.bounty-contract-card {
+  display: grid;
+  align-content: end;
+  min-height: 500px;
+  padding: 1rem;
+  background:
+    linear-gradient(180deg, rgba(5, 8, 6, 0.36), rgba(5, 8, 6, 0.92)),
+    url("/ritual/ritual-bounty-judge-flow.png") 58% center / cover no-repeat;
+  overflow: hidden;
+}
+
+.bounty-card-mark {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+}
+
+.bounty-card-mark img {
+  width: 62px;
+  height: 62px;
+  flex: 0 0 auto;
+  border: 2px solid var(--black);
+  border-radius: 3px;
+  object-fit: cover;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.5);
+}
+
+.bounty-card-mark span,
+.bounty-visual-copy > span {
+  color: var(--green);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.bounty-contract-card h3 {
+  max-width: 12ch;
+  margin-top: 0.95rem;
+  color: var(--ink);
+  font-size: clamp(1.55rem, 2.3vw, 2.35rem);
+  line-height: 0.98;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.56);
+}
+
+.bounty-contract-card p {
+  max-width: 32rem;
+  margin-top: 0.7rem;
+  color: rgba(255, 248, 223, 0.88);
+  font-weight: 680;
+  line-height: 1.45;
+}
+
+.bounty-proof-list {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+
+.bounty-proof-list div {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.64rem;
+  border: 2px solid rgba(5, 8, 6, 0.82);
+  border-radius: 4px;
+  background: rgba(5, 8, 6, 0.72);
+}
+
+.bounty-proof-list dt {
+  color: rgba(255, 248, 223, 0.62);
+  font-size: 0.72rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.bounty-proof-list dd {
+  min-width: 0;
+  color: var(--paper);
+  font-family: "Space Mono", monospace;
+  font-size: 0.82rem;
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.bounty-visual-proof {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.82fr) minmax(0, 1fr);
+  grid-template-areas:
+    "art copy"
+    "art flow";
+  gap: 0;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(53, 255, 154, 0.05), rgba(255, 217, 79, 0.035)),
+    rgba(8, 18, 13, 0.9);
+}
+
+.bounty-visual-proof > img {
+  grid-area: art;
+  width: 100%;
+  height: 100%;
+  min-height: 390px;
+  object-fit: cover;
+  border-right: 2px solid var(--black);
+}
+
+.bounty-visual-copy {
+  grid-area: copy;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  padding: clamp(1rem, 2.8vw, 1.8rem);
+  padding-bottom: 0.9rem;
+}
+
+.bounty-visual-copy h2 {
+  max-width: 620px;
+  margin-top: 0.5rem;
+  color: var(--paper);
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  line-height: 1;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.62);
+}
+
+.bounty-visual-copy p {
+  max-width: 650px;
+  margin-top: 0.75rem;
+  color: var(--soft);
+  font-weight: 680;
+  line-height: 1.5;
+}
+
+.bounty-visual-proof .brief-flow {
+  grid-area: flow;
+  align-self: end;
+  padding: clamp(1rem, 2.8vw, 1.8rem);
+  padding-top: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 @media (max-width: 1040px) {
   .world-gallery {
     --world-gallery-height: 620px;
@@ -3457,5 +3634,56 @@ body {
   .side-nav em {
     display: block;
     font-size: 0.64rem;
+  }
+}
+
+@media (max-width: 860px) {
+  .bounty-layout,
+  .bounty-visual-proof {
+    grid-template-columns: 1fr;
+  }
+
+  .bounty-visual-proof {
+    grid-template-areas:
+      "art"
+      "copy"
+      "flow";
+  }
+
+  .bounty-hero-panel,
+  .bounty-contract-card {
+    min-height: 440px;
+  }
+
+  .bounty-contract-card h3 {
+    max-width: none;
+  }
+
+  .bounty-visual-proof > img {
+    min-height: 300px;
+    border-right: 0;
+    border-bottom: 2px solid var(--black);
+  }
+}
+
+@media (max-width: 640px) {
+  .bounty-hero-panel {
+    min-height: 460px;
+    background-position: 58% center;
+  }
+
+  .bounty-hero-panel h1 {
+    font-size: clamp(2.1rem, 12vw, 3.7rem);
+    line-height: 0.98;
+  }
+
+  .bounty-contract-card {
+    min-height: 430px;
+    background-position: 50% center;
+  }
+
+  .bounty-proof-list div,
+  .bounty-visual-proof .brief-flow {
+    grid-template-columns: 1fr;
   }
 }

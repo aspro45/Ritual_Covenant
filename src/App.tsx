@@ -80,6 +80,8 @@ const ritualAssets = {
   airship: "/ritual/ritual-generated-bazaar.png",
   cityBillboard: "/ritual/ritual-generated-kernel-city.png",
   cloudRun: "/ritual/ritual-generated-cloud-run.png",
+  bountyHero: "/ritual/ritual-bounty-judge-hero.png",
+  bountyFlow: "/ritual/ritual-bounty-judge-flow.png",
 };
 
 const worldPanels = [
@@ -1336,16 +1338,16 @@ function BriefPage({
 function BountyJudgePage() {
   return (
     <PageShell>
-      <section className="brief-layout">
-        <article className="brief-article">
+      <section className="brief-layout bounty-layout">
+        <article className="brief-article bounty-hero-panel">
           <span className="eyebrow">
             <LockKeyhole size={16} />
             Privacy-preserving bounty
           </span>
-          <h1>Covenant now protects bounty answers before AI judging.</h1>
+          <h1>Commit-Reveal Bounty Judge</h1>
           <p className="brief-lede">
-            The new module keeps submissions hidden during the commit phase, verifies every reveal on-chain,
-            and anchors one batch input for fair AI judging.
+            Builders commit hidden answers first, reveal only after the deadline, and send one verified batch
+            into AI judging.
           </p>
           <div className="brief-meta" aria-label="Bounty judge contract links">
             <a href={`${RITUAL_TESTNET.explorerUrl}/address/${BOUNTY_JUDGE.address}`} target="_blank" rel="noreferrer">
@@ -1363,19 +1365,36 @@ function BountyJudgePage() {
           </div>
         </article>
 
-        <aside className="brief-author">
-          <img src={ritualAssets.logo} alt="" />
-          <span>{BOUNTY_JUDGE.status}</span>
-          <h3>{BOUNTY_JUDGE.name}</h3>
+        <aside className="bounty-contract-card">
+          <div className="bounty-card-mark">
+            <img src={ritualAssets.logo} alt="" />
+            <span>{BOUNTY_JUDGE.status}</span>
+          </div>
+          <h3>Commit-Reveal Judge</h3>
           <p>{BOUNTY_JUDGE.purpose}</p>
-          <code>{shortHash(BOUNTY_JUDGE.address, 10, 8)}</code>
+          <dl className="bounty-proof-list">
+            <div>
+              <dt>Contract</dt>
+              <dd>{shortHash(BOUNTY_JUDGE.address, 10, 8)}</dd>
+            </div>
+            <div>
+              <dt>Deploy tx</dt>
+              <dd>{shortHash(BOUNTY_JUDGE.deploymentTx, 10, 8)}</dd>
+            </div>
+            <div>
+              <dt>Gas</dt>
+              <dd>{BOUNTY_JUDGE.deploymentGasUsed}</dd>
+            </div>
+          </dl>
         </aside>
       </section>
 
-      <section className="brief-proof">
-        <div>
+      <section className="bounty-visual-proof">
+        <img src={ritualAssets.bountyFlow} alt="" />
+        <div className="bounty-visual-copy">
           <span>Lifecycle</span>
-          <h2>Commit first, reveal later, judge once.</h2>
+          <h2>Commit first. Reveal later. Judge once.</h2>
+          <p>Only valid revealed answers enter the AI batch, so public copying during the submission window stops being useful.</p>
         </div>
         <div className="brief-flow">
           {bountyFlow.map((item, index) => (
