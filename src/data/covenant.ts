@@ -74,6 +74,7 @@ export const stackLinks = [
   { label: "Ritual Explorer", href: "https://explorer.ritualfoundation.org/" },
   { label: "Ritual Docs", href: "https://docs.ritualfoundation.org/" },
   { label: "Ritual Whitepaper", href: "https://whitepaper.ritualfoundation.org/" },
+  { label: "ASPRO_22", href: "https://x.com/ASPRO_22" },
 ];
 
 export const contractModules = [

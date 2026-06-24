@@ -2042,6 +2042,206 @@ pre {
   line-height: 1.35;
 }
 
+.brief-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.48fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.brief-article,
+.brief-author,
+.brief-note,
+.brief-proof {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(5, 14, 10, 0.78);
+  box-shadow:
+    inset 0 1px 0 rgba(244, 255, 247, 0.06),
+    0 18px 52px rgba(0, 0, 0, 0.18);
+}
+
+.brief-article {
+  min-height: 430px;
+  padding: clamp(1.1rem, 3vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.brief-article h1 {
+  max-width: 780px;
+  margin-top: 0.9rem;
+  color: var(--ink);
+  font-size: clamp(2.1rem, 4.35vw, 4.1rem);
+  font-weight: 950;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.brief-lede {
+  max-width: 740px;
+  margin-top: 1rem;
+  color: var(--soft);
+  font-size: 1.04rem;
+  line-height: 1.55;
+}
+
+.brief-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+}
+
+.brief-meta a,
+.brief-meta button,
+.brief-proof-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 40px;
+  padding: 0.68rem 0.82rem;
+  border: 1px solid rgba(244, 255, 247, 0.14);
+  border-radius: var(--radius);
+  background: rgba(244, 255, 247, 0.04);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.brief-author {
+  display: grid;
+  align-content: end;
+  min-height: 430px;
+  padding: 1rem;
+}
+
+.brief-author img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border: 1px solid rgba(244, 255, 247, 0.2);
+}
+
+.brief-author span,
+.brief-proof > div > span,
+.brief-note > span {
+  color: var(--green);
+  font-size: 0.74rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.brief-author h3 {
+  margin-top: 0.75rem;
+  color: var(--ink);
+  font-size: clamp(1.6rem, 2.6vw, 2.25rem);
+  line-height: 1;
+}
+
+.brief-author p {
+  margin-top: 0.7rem;
+  color: var(--soft);
+  line-height: 1.5;
+}
+
+.brief-author a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: fit-content;
+  margin-top: 1rem;
+  color: var(--green);
+  font-weight: 850;
+}
+
+.brief-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.brief-note {
+  min-height: 220px;
+  padding: 1rem;
+}
+
+.brief-note h3 {
+  margin-top: 0.9rem;
+  color: var(--ink);
+  font-size: 1.25rem;
+}
+
+.brief-note p {
+  margin-top: 0.7rem;
+  color: var(--soft);
+  line-height: 1.5;
+}
+
+.brief-proof {
+  display: grid;
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+  gap: 1rem;
+  align-items: start;
+  padding: 1rem;
+}
+
+.brief-proof h2 {
+  margin-top: 0.35rem;
+  color: var(--ink);
+  font-size: clamp(1.45rem, 2.8vw, 2.35rem);
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.brief-proof p {
+  margin-top: 0.7rem;
+  color: var(--soft);
+  line-height: 1.48;
+}
+
+.brief-flow {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.brief-flow-step {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+  min-height: 66px;
+  padding: 0.75rem;
+  border: 1px solid rgba(244, 255, 247, 0.1);
+  border-radius: var(--radius);
+  background: rgba(244, 255, 247, 0.035);
+}
+
+.brief-flow-step strong {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(68, 255, 153, 0.24);
+  color: var(--green);
+}
+
+.brief-flow-step p {
+  margin: 0;
+}
+
+.brief-proof.live {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.brief-proof-link {
+  background: rgba(68, 255, 153, 0.08);
+  color: var(--green);
+  font-weight: 850;
+}
+
 .stage-footer {
   display: flex;
   align-items: center;
@@ -2151,6 +2351,7 @@ pre {
 
 @media (max-width: 860px) {
   .overview-grid,
+  .brief-layout,
   .two-column,
   .studio-layout,
   .inheritance-layout,
@@ -2160,6 +2361,11 @@ pre {
   }
 
   .trial-body {
+    grid-template-columns: 1fr;
+  }
+
+  .brief-columns,
+  .brief-proof {
     grid-template-columns: 1fr;
   }
 
@@ -2194,7 +2400,13 @@ pre {
     min-height: auto;
   }
 
+  .brief-article,
+  .brief-author {
+    min-height: auto;
+  }
+
   .case-strip,
+  .brief-columns,
   .primitive-grid,
   .flow-band,
   .checklist {
@@ -2271,6 +2483,23 @@ pre {
     padding: 1rem;
   }
 
+  .brief-article {
+    padding: 1rem;
+  }
+
+  .brief-article h1 {
+    font-size: clamp(1.95rem, 8.4vw, 2.55rem);
+    line-height: 1.03;
+  }
+
+  .brief-proof.live {
+    grid-template-columns: 1fr;
+  }
+
+  .brief-proof-link {
+    width: 100%;
+  }
+
   .command-hero p {
     margin-top: 0.8rem;
     font-size: 0.96rem;
@@ -2339,6 +2568,7 @@ pre {
   }
 
   .case-strip,
+  .brief-columns,
   .primitive-grid,
   .flow-band,
   .status-ledger,
@@ -2632,6 +2862,10 @@ body {
 .enforcement-panel,
 .inheritance-card,
 .pitch-hero,
+.brief-article,
+.brief-author,
+.brief-note,
+.brief-proof,
 .trial-console,
 .terminal-panel,
 .policy-preview,
@@ -2712,6 +2946,19 @@ body {
   font-weight: 650;
 }
 
+.brief-article {
+  background:
+    linear-gradient(90deg, rgba(5, 8, 6, 0.95), rgba(5, 8, 6, 0.72) 46%, rgba(5, 8, 6, 0.18)),
+    linear-gradient(180deg, rgba(5, 8, 6, 0.08), rgba(5, 8, 6, 0.84)),
+    url("/ritual/ritual-generated-sky-lane.png") center / cover no-repeat;
+}
+
+.brief-author {
+  background:
+    linear-gradient(180deg, rgba(5, 8, 6, 0.12), rgba(5, 8, 6, 0.88)),
+    url("/ritual/ritual-generated-bazaar.png") center / cover no-repeat;
+}
+
 .hero-callouts {
   display: flex;
   flex-wrap: wrap;
@@ -2736,6 +2983,8 @@ body {
 .surface-panel,
 .terminal-panel,
 .offline-kit,
+.brief-note,
+.brief-proof,
 .policy-preview {
   background:
     linear-gradient(135deg, rgba(53, 255, 154, 0.06), rgba(255, 217, 79, 0.035)),
@@ -2763,6 +3012,7 @@ body {
 .receipt-panel,
 .case-tile,
 .stat-pill,
+.brief-flow-step,
 .flow-step,
 .trace-row,
 .offline-receipt,

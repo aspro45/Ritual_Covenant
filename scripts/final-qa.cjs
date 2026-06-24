@@ -3,7 +3,7 @@ const path = require("path");
 
 const baseUrl = process.env.QA_BASE_URL || "http://127.0.0.1:5178/";
 const outputsDir = path.resolve(process.cwd(), "..", "..", "outputs");
-const routes = ["overview", "firewall", "agents", "policy", "inheritance", "contracts", "pitch"];
+const routes = ["overview", "brief", "firewall", "agents", "policy", "inheritance", "contracts", "pitch"];
 const viewports = [
   {
     name: "desktop",
@@ -317,8 +317,8 @@ async function inspectRoute(page, route) {
       failures.push(`${result.viewport} ${result.route} has ${result.horizontalOverflow}px horizontal overflow.`);
     }
 
-    if (result.navButtons !== 7) {
-      failures.push(`${result.viewport} ${result.route} expected 7 navigation buttons, found ${result.navButtons}.`);
+    if (result.navButtons !== routes.length) {
+      failures.push(`${result.viewport} ${result.route} expected ${routes.length} navigation buttons, found ${result.navButtons}.`);
     }
 
     if (result.bannedText) {

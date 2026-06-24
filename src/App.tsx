@@ -36,7 +36,7 @@ import {
 import { contractIntegrationChecklist, contractMethods, RITUAL_TESTNET } from "./lib/contracts";
 import { fetchLiveCovenantState, type LiveCovenantState } from "./lib/onchain";
 
-type PageId = "overview" | "firewall" | "agents" | "policy" | "inheritance" | "contracts" | "pitch";
+type PageId = "overview" | "brief" | "firewall" | "agents" | "policy" | "inheritance" | "contracts" | "pitch";
 type LiveStatus = "loading" | "live" | "error";
 
 type CovenantCase = {
@@ -54,6 +54,7 @@ type CovenantCase = {
 
 const routes: Array<{ id: PageId; label: string; icon: LucideIcon; kicker: string }> = [
   { id: "overview", label: "Command", icon: Home, kicker: "Control" },
+  { id: "brief", label: "Brief", icon: ScrollText, kicker: "Read" },
   { id: "firewall", label: "Firewall", icon: ShieldAlert, kicker: "Gate" },
   { id: "agents", label: "Agents", icon: RadioTower, kicker: "Fleet" },
   { id: "policy", label: "Policy Studio", icon: BookOpenCheck, kicker: "Limits" },
@@ -117,6 +118,10 @@ const pageCopy: Record<PageId, { title: string; subtitle: string }> = {
   overview: {
     title: "Agent Policy Firewall",
     subtitle: "Operational controls for agents that spend, store secrets, and recover from failure.",
+  },
+  brief: {
+    title: "Project Brief",
+    subtitle: "A readable technical article for judges, developers, and operators reviewing Covenant.",
   },
   firewall: {
     title: "Intent Enforcement",
@@ -195,6 +200,33 @@ const deployRoute = [
     label: "Submit proof",
     detail: "Use the contract address and tx hashes as the public competition proof.",
   },
+];
+
+const builderXUrl = "https://x.com/ASPRO_22";
+
+const briefSections = [
+  {
+    title: "The problem",
+    body:
+      "Autonomous agents can hold funds, call contracts, rely on secrets, and disappear when a key, scheduler, or operator path fails. Most tools only observe the failure after execution.",
+  },
+  {
+    title: "The primitive",
+    body:
+      "CovenantKernel turns agent risk into a pre-execution policy path: register the agent, submit an intent, record an attested decision, then execute, slash, cool down, or hand off to a successor.",
+  },
+  {
+    title: "Why it matters",
+    body:
+      "The project makes policy operational instead of advisory. Every important action leaves a receipt that developers can inspect on Ritual Chain Testnet.",
+  },
+];
+
+const briefFlow = [
+  "Agent registers policy, successor, memory CID, and bond.",
+  "A proposed action enters the intent gate before value moves.",
+  "The policy decision is written as a machine-readable receipt.",
+  "Allowed actions execute; unsafe actions can be blocked, slashed, or inherited.",
 ];
 
 function classForKind(kind: CaseKind) {
@@ -1093,6 +1125,95 @@ function ContractsPage({ liveState, liveStatus, liveError }: { liveState: LiveCo
   );
 }
 
+function BriefPage({
+  liveState,
+  liveStatus,
+  go,
+}: {
+  liveState: LiveCovenantState | null;
+  liveStatus: LiveStatus;
+  go: (page: PageId) => void;
+}) {
+  return (
+    <PageShell>
+      <section className="brief-layout">
+        <article className="brief-article">
+          <span className="eyebrow">
+            <ScrollText size={16} />
+            Builder brief
+          </span>
+          <h1>Ritual Covenant makes autonomous agents enforceable before they act.</h1>
+          <p className="brief-lede">
+            Covenant is a live on-chain control surface for agents that move value, depend on private memory,
+            and need a recovery path when their operator, scheduler, or wallet fails.
+          </p>
+          <div className="brief-meta" aria-label="Project proof links">
+            <a href={`${RITUAL_TESTNET.explorerUrl}/address/${RITUAL_TESTNET.covenantKernel}`} target="_blank" rel="noreferrer">
+              Contract <ExternalLink size={14} />
+            </a>
+            <button onClick={() => go("contracts")}>
+              Live proof <ArrowRight size={14} />
+            </button>
+            <a href={builderXUrl} target="_blank" rel="noreferrer">
+              ASPRO_22 <ExternalLink size={14} />
+            </a>
+          </div>
+        </article>
+
+        <aside className="brief-author">
+          <img src={ritualAssets.logo} alt="" />
+          <span>Builder channel</span>
+          <h3>ASPRO_22</h3>
+          <p>Build notes, proof updates, and the public Ritual Covenant submission trail.</p>
+          <a href={builderXUrl} target="_blank" rel="noreferrer">
+            Open X profile <ExternalLink size={15} />
+          </a>
+        </aside>
+      </section>
+
+      <section className="brief-columns" aria-label="Project explanation">
+        {briefSections.map((section, index) => (
+          <article className="brief-note" key={section.title}>
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            <h3>{section.title}</h3>
+            <p>{section.body}</p>
+          </article>
+        ))}
+      </section>
+
+      <section className="brief-proof">
+        <div>
+          <span>How Covenant works</span>
+          <h2>Policy becomes an execution path, not a dashboard warning.</h2>
+        </div>
+        <div className="brief-flow">
+          {briefFlow.map((item, index) => (
+            <div className="brief-flow-step" key={item}>
+              <strong>{String(index + 1).padStart(2, "0")}</strong>
+              <p>{item}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="brief-proof live">
+        <div>
+          <span>Current on-chain proof</span>
+          <h2>{liveState ? `Agent #${liveState.agentId} executed check #${liveState.checkId}.` : `Ritual RPC: ${liveStatus}`}</h2>
+          <p>
+            {liveState
+              ? `The live sink received ${liveState.sink.received} RITUAL and the CovenantKernel proof is readable from block ${liveState.latestBlock}.`
+              : "The frontend reads CovenantKernel directly from Ritual Chain Testnet."}
+          </p>
+        </div>
+        <a className="brief-proof-link" href={`${RITUAL_TESTNET.explorerUrl}/address/${RITUAL_TESTNET.covenantKernel}`} target="_blank" rel="noreferrer">
+          Inspect kernel <ExternalLink size={16} />
+        </a>
+      </section>
+    </PageShell>
+  );
+}
+
 function PitchPage() {
   return (
     <PageShell>
@@ -1260,6 +1381,7 @@ export default function App() {
           <FirewallPage cases={liveCases} selected={selected} onSelect={setSelectedCaseId} liveState={liveState} liveStatus={liveStatus} />
         )}
         {activePage === "agents" && <AgentsPage liveState={liveState} liveStatus={liveStatus} liveError={liveError} />}
+        {activePage === "brief" && <BriefPage liveState={liveState} liveStatus={liveStatus} go={go} />}
         {activePage === "policy" && <PolicyStudioPage />}
         {activePage === "inheritance" && <InheritancePage liveState={liveState} liveStatus={liveStatus} />}
         {activePage === "contracts" && <ContractsPage liveState={liveState} liveStatus={liveStatus} liveError={liveError} />}
