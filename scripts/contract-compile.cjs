@@ -2,17 +2,20 @@ const fs = require("fs");
 const path = require("path");
 const solc = require("solc");
 
-const contractPath = path.resolve(process.cwd(), "contracts", "CovenantKernel.sol");
 const outputsDir = path.resolve(process.cwd(), "..", "..", "outputs");
-const source = fs.readFileSync(contractPath, "utf8");
+
+const sources = {
+  "contracts/CovenantKernel.sol": {
+    content: fs.readFileSync(path.resolve(process.cwd(), "contracts", "CovenantKernel.sol"), "utf8"),
+  },
+  "contracts/CovenantGuardianAgent.sol": {
+    content: fs.readFileSync(path.resolve(process.cwd(), "contracts", "CovenantGuardianAgent.sol"), "utf8"),
+  },
+};
 
 const input = {
   language: "Solidity",
-  sources: {
-    "contracts/CovenantKernel.sol": {
-      content: source,
-    },
-  },
+  sources,
   settings: {
     optimizer: {
       enabled: true,
@@ -38,21 +41,35 @@ if (fatal.length > 0) {
 
 fs.mkdirSync(outputsDir, { recursive: true });
 
-const artifact = output.contracts["contracts/CovenantKernel.sol"].CovenantKernel;
-const bytecode = artifact.evm.bytecode.object;
-const deployedBytecode = artifact.evm.deployedBytecode.object;
-const abiPath = path.join(outputsDir, "CovenantKernel.abi.json");
-const summaryPath = path.join(outputsDir, "CovenantKernel.compile-summary.json");
+const contracts = [
+  { source: "contracts/CovenantKernel.sol", name: "CovenantKernel" },
+  { source: "contracts/CovenantGuardianAgent.sol", name: "CovenantGuardianAgent" },
+];
 
-fs.writeFileSync(abiPath, JSON.stringify(artifact.abi, null, 2));
+const artifacts = contracts.map(({ source, name }) => {
+  const artifact = output.contracts[source][name];
+  const bytecode = artifact.evm.bytecode.object;
+  const deployedBytecode = artifact.evm.deployedBytecode.object;
+  const abiPath = path.join(outputsDir, `${name}.abi.json`);
+
+  fs.writeFileSync(abiPath, JSON.stringify(artifact.abi, null, 2));
+
+  return {
+    name,
+    source,
+    abiPath,
+    bytecodeBytes: bytecode.length / 2,
+    deployedBytecodeBytes: deployedBytecode.length / 2,
+  };
+});
+
+const summaryPath = path.join(outputsDir, "CovenantKernel.compile-summary.json");
 
 const summary = {
   compiler: solc.version(),
   optimizer: input.settings.optimizer,
   evmVersion: input.settings.evmVersion,
-  abiPath,
-  bytecodeBytes: bytecode.length / 2,
-  deployedBytecodeBytes: deployedBytecode.length / 2,
+  artifacts,
   warnings: errors.filter((item) => item.severity !== "error").map((item) => item.formattedMessage),
 };
 

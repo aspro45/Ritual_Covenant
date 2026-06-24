@@ -6,6 +6,7 @@ export const RITUAL_TESTNET = {
   faucetUrl: "https://faucet.ritualfoundation.org",
   status: "live verified",
   covenantKernel: "0x4086710799f9d1Cb1eDb4D0a64522F00A5790270",
+  covenantGuardian: "0xC5804673c09e0b492bc2371892c8c0270ef0878E",
 };
 
 export const LIVE_PROOF = {
@@ -50,6 +51,7 @@ export const LIVE_PROOF = {
 export const contractIntegrationChecklist = [
   "Run npm.cmd run contract:compile and npm.cmd run contract:test before spending faucet fees.",
   "CovenantKernel is live on Ritual Chain Testnet at 0x4086710799f9d1Cb1eDb4D0a64522F00A5790270.",
+  "CovenantGuardianAgent is live at 0xC5804673c09e0b492bc2371892c8c0270ef0878E after local tests, gas estimates, and dry-run preflight.",
   "Use the explorer to verify deployment tx 0xdd17daee2f10ec9489898b5ff3660cdfd11942223c2a167d99f404b09322cd30.",
   "Live smoke proof executed agent #1 check #1 through tx 0xc2cfd5ee8d7e0106dd9a3067423731979e8f9c4b907b5f1e5a0762f1877e05fa.",
   "Point the frontend event feed at AgentRegistered, IntentSubmitted, DecisionRecorded, and WillExecuted.",
@@ -65,6 +67,21 @@ export const minimalAbiSketch = [
   "slash(uint256 agentId, uint256 amount, address beneficiary)",
   "executeWill(uint256 agentId, string memory newMemoryCid)",
 ];
+
+export const GUARDIAN_AGENT = {
+  name: "CovenantGuardianAgent",
+  status: "live deployed",
+  address: "0xC5804673c09e0b492bc2371892c8c0270ef0878E",
+  deploymentTx: "0x89d11d69c2171f87c2a2051fbc0785cc7e71ce1a6857988d8ba558cdcabc75b5",
+  sourcePath: "CovenantGuardianAgent.sol",
+  deployScript: "npm.cmd run contract:deploy:guardian",
+  dryRunCommand: "set DRY_RUN=true&& npm.cmd run contract:deploy:guardian",
+  localDeployGas: "2,684,461",
+  deploymentGasUsed: "2,729,527",
+  localFullFlowGas: "3,667,618",
+  purpose:
+    "A deterministic agent companion that can own a CovenantKernel agent, heartbeat it, submit guarded intents, score kernel intents, and write policy receipts when trusted as an attestor.",
+};
 
 export const contractMethods = [
   {
@@ -91,5 +108,38 @@ export const contractMethods = [
     name: "executeWill",
     params: ["uint256 agentId", "string newMemoryCid"],
     purpose: "Transfers recovery state to the approved successor after heartbeat failure.",
+  },
+];
+
+export const guardianMethods = [
+  {
+    name: "registerWithKernel",
+    params: ["bytes32 policyHash", "string policyCid", "address successor"],
+    purpose: "Links the Guardian contract as the owner of a CovenantKernel agent.",
+  },
+  {
+    name: "pulseKernelHeartbeat",
+    params: [],
+    purpose: "Public keeper hook: anyone can pay gas to keep the agent heartbeat alive without getting control.",
+  },
+  {
+    name: "submitGuardianIntent",
+    params: ["address target", "uint256 value", "bytes callData", "uint64 ttl", "string missionCid"],
+    purpose: "Submits executable intents through the kernel from the Guardian-owned agent.",
+  },
+  {
+    name: "previewDecision",
+    params: ["uint256 checkId"],
+    purpose: "Scores an intent with on-chain facts before spending gas on the receipt.",
+  },
+  {
+    name: "watchKernelIntent",
+    params: ["uint256 checkId"],
+    purpose: "Records Allowed, Blocked, or Slashed decisions in CovenantKernel if the Guardian is trusted as attestor.",
+  },
+  {
+    name: "executeGuardianApproved",
+    params: ["uint256 checkId", "bytes callData"],
+    purpose: "Executes an approved intent from the Guardian agent's bonded kernel balance.",
   },
 ];

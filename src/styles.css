@@ -1254,6 +1254,67 @@ svg {
   line-height: 1.4;
 }
 
+.guardian-layer {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.1fr);
+  gap: 1rem;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(110deg, rgba(68, 255, 153, 0.09), transparent 52%),
+    rgba(5, 14, 10, 0.78);
+  overflow: hidden;
+}
+
+.guardian-copy {
+  padding: 1.15rem;
+}
+
+.guardian-copy h2 {
+  margin-top: 0.75rem;
+  color: var(--ink);
+  font-size: clamp(1.45rem, 2.4vw, 2.2rem);
+  line-height: 1.05;
+}
+
+.guardian-copy p {
+  margin-top: 0.75rem;
+  color: var(--soft);
+  line-height: 1.5;
+}
+
+.guardian-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: rgba(244, 255, 247, 0.08);
+}
+
+.guardian-metrics div,
+.guardian-contract-grid div {
+  min-width: 0;
+  padding: 1rem;
+  background: rgba(4, 10, 7, 0.78);
+}
+
+.guardian-metrics span,
+.guardian-contract-grid span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.guardian-metrics strong,
+.guardian-contract-grid strong {
+  display: block;
+  margin-top: 0.45rem;
+  color: var(--ink);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
 .agent-passport dl,
 .inheritance-card dl {
   display: grid;
@@ -1545,6 +1606,91 @@ input[type="checkbox"] {
 
 .contract-layout {
   align-items: start;
+}
+
+.guardian-contract-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background:
+    radial-gradient(circle at 16% 0%, rgba(134, 247, 255, 0.1), transparent 34%),
+    linear-gradient(115deg, rgba(68, 255, 153, 0.08), transparent 52%),
+    rgba(5, 14, 10, 0.8);
+  box-shadow: inset 0 1px 0 rgba(244, 255, 247, 0.06);
+}
+
+.guardian-contract-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.guardian-contract-head span {
+  display: block;
+  color: var(--cyan);
+  font-size: 0.74rem;
+  text-transform: uppercase;
+}
+
+.guardian-contract-head h3 {
+  margin-top: 0.25rem;
+  color: var(--ink);
+  font-size: clamp(1.35rem, 2.5vw, 2rem);
+  line-height: 1.08;
+}
+
+.guardian-contract-head strong {
+  flex: 0 0 auto;
+  color: var(--green);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+}
+
+.guardian-contract-panel > p {
+  max-width: 880px;
+  color: var(--soft);
+  line-height: 1.5;
+}
+
+.guardian-contract-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid rgba(244, 255, 247, 0.08);
+  border-radius: var(--radius);
+  background: rgba(244, 255, 247, 0.08);
+}
+
+.guardian-command-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.guardian-command-row a,
+.guardian-command-row code {
+  max-width: 100%;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid rgba(68, 255, 153, 0.16);
+  border-radius: 6px;
+  background: rgba(2, 8, 5, 0.72);
+  color: #dfffe9;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+
+.guardian-command-row a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--green);
+  font-family: inherit;
+  font-weight: 850;
 }
 
 .contract-module {
@@ -2315,7 +2461,8 @@ pre {
   }
 
   .status-ledger,
-  .agent-command-grid {
+  .agent-command-grid,
+  .guardian-metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -2355,6 +2502,7 @@ pre {
   .two-column,
   .studio-layout,
   .inheritance-layout,
+  .guardian-layer,
   .contract-layout,
   .pitch-grid {
     grid-template-columns: 1fr;
@@ -2409,6 +2557,7 @@ pre {
   .brief-columns,
   .primitive-grid,
   .flow-band,
+  .guardian-contract-grid,
   .checklist {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2573,6 +2722,8 @@ pre {
   .flow-band,
   .status-ledger,
   .agent-command-grid,
+  .guardian-metrics,
+  .guardian-contract-grid,
   .checklist {
     grid-template-columns: 1fr;
   }

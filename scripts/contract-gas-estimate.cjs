@@ -5,6 +5,7 @@ const solc = require("solc");
 const { ethers } = require("ethers");
 
 const kernelSource = fs.readFileSync(path.resolve(process.cwd(), "contracts", "CovenantKernel.sol"), "utf8");
+const guardianSource = fs.readFileSync(path.resolve(process.cwd(), "contracts", "CovenantGuardianAgent.sol"), "utf8");
 const sinkSource = `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 contract ValueSink {
@@ -20,6 +21,7 @@ function compile() {
     language: "Solidity",
     sources: {
       "contracts/CovenantKernel.sol": { content: kernelSource },
+      "contracts/CovenantGuardianAgent.sol": { content: guardianSource },
       "contracts/ValueSink.sol": { content: sinkSource },
     },
     settings: {
@@ -43,6 +45,7 @@ function compile() {
 
   return {
     CovenantKernel: artifact("contracts/CovenantKernel.sol", "CovenantKernel"),
+    CovenantGuardianAgent: artifact("contracts/CovenantGuardianAgent.sol", "CovenantGuardianAgent"),
     ValueSink: artifact("contracts/ValueSink.sol", "ValueSink"),
   };
 }
@@ -83,6 +86,7 @@ async function main() {
   const sinkIface = new ethers.Interface(compiled.ValueSink.abi);
   const policyHash = ethers.keccak256(ethers.toUtf8Bytes("gas-policy"));
   const calldata = sinkIface.encodeFunctionData("receiveValue", [ethers.keccak256(ethers.toUtf8Bytes("intent"))]);
+  const guardianPolicyHash = ethers.keccak256(ethers.toUtf8Bytes("guardian-policy"));
 
   rows.push({ label: "deploy CovenantKernel", gas: kernelDeploy.gasUsed });
   rows.push({ label: "deploy ValueSink test target", gas: sinkDeploy.gasUsed });
@@ -116,8 +120,49 @@ async function main() {
     rows,
   );
 
+  const guardianDeploy = await deploy(compiled.CovenantGuardianAgent, owner, [
+    await kernel.getAddress(),
+    ethers.keccak256(ethers.toUtf8Bytes("guardian-purpose")),
+    "ipfs://guardian-purpose",
+    ethers.parseEther("0.1"),
+    true,
+  ]);
+  const guardian = guardianDeploy.contract;
+  rows.push({ label: "deploy CovenantGuardianAgent", gas: guardianDeploy.gasUsed });
+
+  await txGas("trust Guardian as attestor", kernel.connect(owner).setAttestor(await guardian.getAddress(), true), rows);
+  await txGas("Guardian allow target", guardian.connect(owner).setTargetAllowed(await sink.getAddress(), true), rows);
+  await txGas(
+    "Guardian registerWithKernel",
+    guardian.connect(owner).registerWithKernel(guardianPolicyHash, "ipfs://guardian-policy", await successor.getAddress(), {
+      value: ethers.parseEther("0.2"),
+    }),
+    rows,
+  );
+  const guardianCalldata = sinkIface.encodeFunctionData("receiveValue", [ethers.keccak256(ethers.toUtf8Bytes("guardian-intent"))]);
+  await txGas(
+    "Guardian submit intent",
+    guardian.connect(owner).submitGuardianIntent(await sink.getAddress(), ethers.parseEther("0.01"), guardianCalldata, 3600, "ipfs://guardian-mission"),
+    rows,
+  );
+  await txGas("Guardian watch intent", guardian.connect(beneficiary).watchKernelIntent(4), rows);
+  await txGas("Guardian execute approved", guardian.connect(owner).executeGuardianApproved(4, guardianCalldata), rows);
+
   const appFlowGas = rows
     .filter((row) => row.label !== "deploy ValueSink test target")
+    .reduce((sum, row) => sum + row.gas, 0n);
+  const guardianFlowGas = rows
+    .filter((row) =>
+      [
+        "deploy CovenantGuardianAgent",
+        "trust Guardian as attestor",
+        "Guardian allow target",
+        "Guardian registerWithKernel",
+        "Guardian submit intent",
+        "Guardian watch intent",
+        "Guardian execute approved",
+      ].includes(row.label),
+    )
     .reduce((sum, row) => sum + row.gas, 0n);
   const coreDeployAndSmokeGas = rows
     .filter((row) =>
@@ -135,6 +180,8 @@ async function main() {
     gwei,
     deployOnlyNative: nativeCost(kernelDeploy.gasUsed, gwei),
     deployAndSmokeNative: nativeCost(coreDeployAndSmokeGas, gwei),
+    guardianDeployOnlyNative: nativeCost(guardianDeploy.gasUsed, gwei),
+    guardianFullFlowNative: nativeCost(guardianFlowGas, gwei),
     fullLocalFlowNative: nativeCost(appFlowGas, gwei),
   }));
 
@@ -146,6 +193,7 @@ async function main() {
         rows: rows.map((row) => ({ label: row.label, gas: row.gas.toString() })),
         totals: {
           coreDeployAndSmokeGas: coreDeployAndSmokeGas.toString(),
+          guardianFlowGas: guardianFlowGas.toString(),
           fullLocalFlowGas: appFlowGas.toString(),
         },
         scenarios,

@@ -1,6 +1,6 @@
 # CovenantKernel Handoff
 
-`CovenantKernel.sol` is the no-fee contract artifact for the Ritual Covenant project. It is built as one deployable Solidity contract so the idea can be reviewed now and deployed later when faucet fees are available.
+`CovenantKernel.sol` is the live policy kernel for the Ritual Covenant project. `CovenantGuardianAgent.sol` is the new companion agent contract: it can own a kernel agent, keep the heartbeat alive, submit guarded intents, preview deterministic decisions, and write kernel receipts when trusted as an attestor.
 
 ## Why It Stands Out
 
@@ -14,6 +14,19 @@
 - `executeWill` creates a stored inheritance receipt and emits both `DecisionRecorded` and `WillExecuted`.
 - Direct ETH transfers revert so value enters through `registerAgent` or `fundAgent` and stays accounted to an agent bond.
 - No OpenZeppelin imports and no external dependencies, so it can be pasted directly into Remix.
+
+## Guardian Agent Layer
+
+`CovenantGuardianAgent` is not a duplicate kernel. It is the agent-facing runtime that sits on top of the live kernel:
+
+1. `registerWithKernel` registers the Guardian contract itself as a `CovenantKernel` agent owner.
+2. `pulseKernelHeartbeat` lets any keeper/scheduler pay gas to keep the agent live without receiving authority.
+3. `submitGuardianIntent` submits executable intents from the Guardian-owned kernel agent.
+4. `previewDecision` reads kernel storage and scores the intent before final receipt gas is spent.
+5. `watchKernelIntent` records `Allowed`, `Blocked`, or `Slashed` inside `CovenantKernel` if the Guardian is trusted as an attestor.
+6. `executeGuardianApproved` executes only after the kernel stores an `Allowed` receipt.
+
+The Guardian uses configured value limits, target allowlists, calldata revocations, heartbeat checks, and kernel agent status. This keeps policy decisions deterministic and reviewable.
 
 ## Main Flow
 
@@ -32,6 +45,8 @@ Before spending faucet fees, run:
 ```bash
 npm.cmd run contract:compile
 npm.cmd run contract:test
+npm.cmd run contract:guardian:test
+npm.cmd run contract:gas
 ```
 
 Current local coverage checks:
@@ -50,6 +65,11 @@ Current local coverage checks:
 - heartbeat inheritance recovery
 - target revert behavior
 - Ritual-style millisecond timestamp normalization
+- Guardian self-registration as a kernel agent
+- keeper heartbeat hook and spam guard
+- Guardian allowlist/value-limit preview decisions
+- Guardian-written kernel decision receipts
+- Guardian-approved execution from its own kernel bond
 
 ## Deploy Later
 
@@ -67,6 +87,15 @@ Current deployed testnet kernel:
 - Deployer / initial attestor: `0xf6d02F13D7BB5fC24aB6A3D662619641958A3Cf6`
 - Live smoke tx: `0xc2cfd5ee8d7e0106dd9a3067423731979e8f9c4b907b5f1e5a0762f1877e05fa`
 - Live smoke result: agent `1`, check `1`, sink received `0.005`, remaining agent bond `0.045`
+
+Current deployed Guardian companion:
+
+- Address: `0xC5804673c09e0b492bc2371892c8c0270ef0878E`
+- Deployment tx: `0x89d11d69c2171f87c2a2051fbc0785cc7e71ce1a6857988d8ba558cdcabc75b5`
+- Deployment gas used: `2,729,527`
+- Purpose CID: `ipfs://ritual-covenant/guardian-purpose`
+- Max intent value: `0.01`
+- Target allowlist required: `true`
 
 1. Open `contracts/CovenantKernel.sol`.
 2. Compile with Solidity `0.8.24` or newer compatible `0.8.x`.
@@ -99,6 +128,32 @@ policyDigest(...)
 computeIntentHash(...)
 computeReceiptHash(...)
 ```
+
+Guardian companion calls:
+
+```solidity
+registerWithKernel(bytes32 policyHash, string policyCid, address successor)
+pulseKernelHeartbeat()
+submitGuardianIntent(address target, uint256 value, bytes callData, uint64 ttl, string missionCid)
+previewDecision(uint256 checkId)
+watchKernelIntent(uint256 checkId)
+executeGuardianApproved(uint256 checkId, bytes callData)
+```
+
+## Guardian Deploy Safety
+
+Use the preflight mode before spending faucet fees:
+
+```bash
+set DRY_RUN=true&& npm.cmd run contract:deploy:guardian
+```
+
+Local gas simulation:
+
+- Deploy `CovenantGuardianAgent`: `2,684,461` gas
+- Full Guardian flow: `3,667,618` gas
+
+Do not run the real Guardian deploy until the dry run confirms the Ritual RPC chain id, deployed kernel code, deployer balance, gas price, and reserve.
 
 ## Receipt Samples
 

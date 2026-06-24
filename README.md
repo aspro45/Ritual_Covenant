@@ -14,6 +14,8 @@ Ritual Covenant is not another dashboard that watches agents after the damage is
 | Chain ID | `1979` |
 | Contract | [`0x4086710799f9d1Cb1eDb4D0a64522F00A5790270`](https://explorer.ritualfoundation.org/address/0x4086710799f9d1Cb1eDb4D0a64522F00A5790270) |
 | Deployment tx | [`0xdd17daee2f10ec9489898b5ff3660cdfd11942223c2a167d99f404b09322cd30`](https://explorer.ritualfoundation.org/tx/0xdd17daee2f10ec9489898b5ff3660cdfd11942223c2a167d99f404b09322cd30) |
+| Guardian Agent | [`0xC5804673c09e0b492bc2371892c8c0270ef0878E`](https://explorer.ritualfoundation.org/address/0xC5804673c09e0b492bc2371892c8c0270ef0878E) |
+| Guardian deploy tx | [`0x89d11d69c2171f87c2a2051fbc0785cc7e71ce1a6857988d8ba558cdcabc75b5`](https://explorer.ritualfoundation.org/tx/0x89d11d69c2171f87c2a2051fbc0785cc7e71ce1a6857988d8ba558cdcabc75b5) |
 | Live execution tx | [`0xc2cfd5ee8d7e0106dd9a3067423731979e8f9c4b907b5f1e5a0762f1877e05fa`](https://explorer.ritualfoundation.org/tx/0xc2cfd5ee8d7e0106dd9a3067423731979e8f9c4b907b5f1e5a0762f1877e05fa) |
 | Live agent | `agent #1` |
 | Live check | `check #1` |
@@ -63,10 +65,11 @@ flowchart LR
 
 ## Smart Contract
 
-Main contract:
+Main contracts:
 
 ```text
-contracts/CovenantKernel.sol
+contracts/CovenantKernel.sol          live policy kernel
+contracts/CovenantGuardianAgent.sol   tested companion agent contract
 ```
 
 Core external surface:
@@ -91,6 +94,15 @@ Important implementation notes:
 - A submitted intent can only execute once.
 - Execution value is debited from that agent's bond, not from other agents.
 - Ritual testnet millisecond-style timestamps are normalized inside the contract.
+
+`CovenantGuardianAgent` is deployed on Ritual Chain Testnet and extends the kernel into an agent-facing runtime:
+
+- The Guardian contract can register itself as the owner of a `CovenantKernel` agent.
+- Any keeper can pulse the Guardian heartbeat without gaining policy control.
+- The operator can submit guarded intents through the Guardian-owned kernel agent.
+- `previewDecision` scores a kernel intent from on-chain facts before gas is spent on the final receipt.
+- If the kernel owner trusts the Guardian as an attestor, `watchKernelIntent` records `Allowed`, `Blocked`, or `Slashed` decisions directly in `CovenantKernel`.
+- `executeGuardianApproved` executes only after the kernel stores an `Allowed` receipt.
 
 ## Frontend
 
@@ -149,10 +161,29 @@ Run local contract tests:
 npm run contract:test
 ```
 
+Run only the Guardian agent suite:
+
+```bash
+npm run contract:guardian:test
+```
+
 Estimate gas:
 
 ```bash
 npm run contract:gas
+```
+
+Guardian gas from local chain simulation:
+
+| Flow | Gas |
+| --- | ---: |
+| Deploy `CovenantGuardianAgent` | `2,684,461` |
+| Full Guardian flow | `3,667,618` |
+
+Dry-run Guardian deployment before spending fees:
+
+```bash
+set DRY_RUN=true&& npm run contract:deploy:guardian
 ```
 
 Run the live Ritual flow:
@@ -204,6 +235,7 @@ The frontend uses public Ritual RPC and public contract addresses. No private ke
 ```text
 contracts/
   CovenantKernel.sol          Solidity policy kernel
+  CovenantGuardianAgent.sol   Agent companion and deterministic attestor
   README.md                   Contract handoff details
 
 src/
@@ -214,7 +246,9 @@ src/
 
 scripts/
   contract-tests.cjs          Local contract test suite
+  guardian-tests.cjs          Local Guardian agent test suite
   deploy-ritual.cjs           Ritual testnet deploy script
+  deploy-guardian.cjs         Guardian deploy preflight/deploy script
   live-ritual-flow.cjs        Live on-chain smoke flow
   contract-gas-estimate.cjs   Gas estimates
 

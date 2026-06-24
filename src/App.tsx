@@ -33,7 +33,7 @@ import {
   stackLinks,
   type CaseKind,
 } from "./data/covenant";
-import { contractIntegrationChecklist, contractMethods, RITUAL_TESTNET } from "./lib/contracts";
+import { contractIntegrationChecklist, contractMethods, GUARDIAN_AGENT, guardianMethods, RITUAL_TESTNET } from "./lib/contracts";
 import { fetchLiveCovenantState, type LiveCovenantState } from "./lib/onchain";
 
 type PageId = "overview" | "brief" | "firewall" | "agents" | "policy" | "inheritance" | "contracts" | "pitch";
@@ -200,6 +200,13 @@ const deployRoute = [
     label: "Submit proof",
     detail: "Use the contract address and tx hashes as the public competition proof.",
   },
+];
+
+const guardianRows = [
+  ["Owner model", "Guardian contract owns a kernel agent"],
+  ["Keeper path", "Any caller can pulse heartbeat, no policy control granted"],
+  ["Decision path", "previewDecision reads kernel facts before watchKernelIntent writes a receipt"],
+  ["Deploy guard", "Dry-run gas preflight before any Ritual testnet spend"],
 ];
 
 const builderXUrl = "https://x.com/ASPRO_22";
@@ -780,6 +787,35 @@ function AgentsPage({ liveState, liveStatus, liveError }: { liveState: LiveCoven
         ))}
       </section>
 
+      <section className="guardian-layer">
+        <div className="guardian-copy">
+          <span className="eyebrow">
+            <RadioTower size={16} />
+            Guardian layer
+          </span>
+          <h2>{GUARDIAN_AGENT.name}</h2>
+          <p>{GUARDIAN_AGENT.purpose}</p>
+        </div>
+        <div className="guardian-metrics">
+          <div>
+            <span>Status</span>
+            <strong>{GUARDIAN_AGENT.status}</strong>
+          </div>
+          <div>
+            <span>Address</span>
+            <strong>{shortHash(GUARDIAN_AGENT.address, 8, 6)}</strong>
+          </div>
+          <div>
+            <span>Deploy gas used</span>
+            <strong>{GUARDIAN_AGENT.deploymentGasUsed}</strong>
+          </div>
+          <div>
+            <span>Deploy tx</span>
+            <strong>{shortHash(GUARDIAN_AGENT.deploymentTx, 8, 6)}</strong>
+          </div>
+        </div>
+      </section>
+
       <section className="surface-panel">
         <div className="section-head">
           <span>Fleet Telemetry</span>
@@ -1054,6 +1090,34 @@ function ContractsPage({ liveState, liveStatus, liveError }: { liveState: LiveCo
   return (
     <PageShell>
       <LiveContractProof liveState={liveState} liveStatus={liveStatus} liveError={liveError} />
+      <section className="guardian-contract-panel">
+        <div className="guardian-contract-head">
+          <div>
+            <span>New companion contract</span>
+            <h3>{GUARDIAN_AGENT.name}</h3>
+          </div>
+          <strong>{GUARDIAN_AGENT.status}</strong>
+        </div>
+        <p>{GUARDIAN_AGENT.purpose}</p>
+        <div className="guardian-contract-grid">
+          {guardianRows.map(([label, value]) => (
+            <div key={label}>
+              <span>{label}</span>
+              <strong>{value}</strong>
+            </div>
+          ))}
+        </div>
+        <div className="guardian-command-row">
+          <a href={`${RITUAL_TESTNET.explorerUrl}/address/${GUARDIAN_AGENT.address}`} target="_blank" rel="noreferrer">
+            Guardian explorer <ExternalLink size={14} />
+          </a>
+          <a href={`${RITUAL_TESTNET.explorerUrl}/tx/${GUARDIAN_AGENT.deploymentTx}`} target="_blank" rel="noreferrer">
+            Deploy tx <ExternalLink size={14} />
+          </a>
+          <code>{GUARDIAN_AGENT.dryRunCommand}</code>
+          <code>{GUARDIAN_AGENT.deployScript}</code>
+        </div>
+      </section>
       <section className="contract-layout">
         <div className="contract-list">
           {contractModules.map(({ name, icon: Icon, purpose }) => (
@@ -1111,6 +1175,30 @@ function ContractsPage({ liveState, liveStatus, liveError }: { liveState: LiveCo
               </article>
             ))}
           </div>
+        </div>
+      </section>
+      <section className="terminal-panel guardian-console">
+        <div className="terminal-head">
+          <RadioTower size={17} />
+          <span>Guardian ABI</span>
+          <strong>agent companion</strong>
+        </div>
+        <div className="method-stack guardian-methods" aria-label="Guardian contract methods">
+          {guardianMethods.map((method, index) => (
+            <article className="method-card" key={method.name}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <div>
+                <div className="method-title-row">
+                  <code>{method.name}</code>
+                  <strong>external</strong>
+                </div>
+                <div className="param-list">
+                  {method.params.length > 0 ? method.params.map((param) => <em key={param}>{param}</em>) : <em>no params</em>}
+                </div>
+                <p>{method.purpose}</p>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
       <div className="checklist">
