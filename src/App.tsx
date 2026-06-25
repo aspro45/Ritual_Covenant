@@ -295,6 +295,67 @@ const bountyArchitecture = [
   { name: "Batch judging", icon: Workflow, text: "The AI receives one canonical set of eligible revealed answers." },
 ];
 
+const bountyReplaySteps = [
+  {
+    label: "Public answer appears",
+    public: "A strong answer is readable by every participant during the submission window.",
+    covenant: "Only a commitment hash is visible. The answer and salt stay off the public board.",
+  },
+  {
+    label: "Copycat reacts",
+    public: "A late participant copies the idea, improves the wording, and submits after seeing the original.",
+    covenant: "The copycat can copy a hash, but cannot reveal it from a different wallet.",
+  },
+  {
+    label: "Reveal window opens",
+    public: "The judge sees two similar answers and cannot prove who was first.",
+    covenant: "The contract checks answer, salt, sender, and bounty ID before eligibility.",
+  },
+  {
+    label: "Batch AI judging",
+    public: "The batch contains contaminated submissions.",
+    covenant: "Only verified revealed answers enter one canonical AI judging batch.",
+  },
+];
+
+const bountyReceiptSteps = [
+  {
+    event: "Commitment submitted",
+    proof: "hash only",
+    check: "No plaintext answer during commit phase.",
+  },
+  {
+    event: "Answer revealed",
+    proof: "sender-bound",
+    check: "Reveal must match answer, salt, wallet, and bounty ID.",
+  },
+  {
+    event: "Batch judged",
+    proof: "single input hash",
+    check: "One LLM batch covers all eligible submissions.",
+  },
+  {
+    event: "Winner finalized",
+    proof: "eligible index",
+    check: "Winner must come from revealed submission IDs.",
+  },
+];
+
+const bountySdkSnippets = [
+  {
+    name: "computeCommitment",
+    text: "Hash answer + salt + sender + bountyId before the answer is public.",
+  },
+  {
+    name: "buildJudgeBatch",
+    text: "Pack prompt, revealed IDs, answer hashes, and rubric into one AI input.",
+  },
+  {
+    name: "verifyReveal",
+    text: "Reject wrong salts, copied hashes, duplicate reveals, and expired windows.",
+  },
+];
+
 function classForKind(kind: CaseKind) {
   return `tone-${kind}`;
 }
@@ -1805,6 +1866,122 @@ function BriefPage({
   );
 }
 
+function BountyProofLab() {
+  const [mode, setMode] = useState<"public" | "covenant">("covenant");
+  const [activeStep, setActiveStep] = useState(1);
+  const protectedMode = mode === "covenant";
+  const activeReplay = bountyReplaySteps[activeStep];
+  const originalCommit = digestPayload({
+    answer: "Original privacy-preserving bounty design",
+    salt: "0xritual-builder-salt",
+    participant: "0xA17C...B011D",
+    bountyId: 1,
+  });
+  const copycatCommit = digestPayload({
+    answer: "Original privacy-preserving bounty design",
+    salt: "0xritual-builder-salt",
+    participant: protectedMode ? "0xC0PY...CA7" : "0xA17C...B011D",
+    bountyId: 1,
+  });
+  const batchReceipt = digestPayload({
+    prompt: "Judge originality, security, and Ritual-native design.",
+    eligibleSubmissionIds: protectedMode ? [1] : [1, 2],
+    result: protectedMode ? "clean batch" : "contaminated batch",
+  });
+
+  return (
+    <section className={`bounty-proof-lab ${protectedMode ? "protected" : "leaky"}`} aria-label="Commit reveal attack replay">
+      <div className="proof-lab-head">
+        <div>
+          <span>Attack replay</span>
+          <h2>{protectedMode ? "The copycat can see the chain, not the answer." : "Public submissions turn originality into a race."}</h2>
+          <p>
+            {protectedMode
+              ? "Covenant binds each reveal to the exact answer, salt, sender wallet, and bounty ID before AI judging starts."
+              : "Without commit-reveal, the best answer becomes public training data for late submissions."}
+          </p>
+        </div>
+        <div className="proof-mode-toggle" role="group" aria-label="Bounty replay mode">
+          <button className={!protectedMode ? "active" : ""} onClick={() => setMode("public")} type="button">
+            Public leak
+          </button>
+          <button className={protectedMode ? "active" : ""} onClick={() => setMode("covenant")} type="button">
+            Covenant gate
+          </button>
+        </div>
+      </div>
+
+      <div className="proof-lab-grid">
+        <div className="replay-timeline" aria-label="Replay timeline">
+          {bountyReplaySteps.map((step, index) => (
+            <button className={activeStep === index ? "active" : ""} key={step.label} onClick={() => setActiveStep(index)} type="button">
+              <strong>{String(index + 1).padStart(2, "0")}</strong>
+              <span>{step.label}</span>
+            </button>
+          ))}
+        </div>
+
+        <article className="replay-verdict">
+          <span>{protectedMode ? "protected path" : "unsafe path"}</span>
+          <h3>{activeReplay.label}</h3>
+          <p>{protectedMode ? activeReplay.covenant : activeReplay.public}</p>
+          <div className="verdict-meter">
+            <div>
+              <span>Original commit</span>
+              <code>{shortHash(originalCommit, 12, 10)}</code>
+            </div>
+            <div>
+              <span>Copycat reveal</span>
+              <code>{protectedMode ? "rejected: sender mismatch" : shortHash(copycatCommit, 12, 10)}</code>
+            </div>
+            <div>
+              <span>Judge batch</span>
+              <code>{shortHash(batchReceipt, 12, 10)}</code>
+            </div>
+          </div>
+        </article>
+
+        <aside className="tee-note">
+          <span>Advanced Ritual-native route</span>
+          <h3>Encrypted first, plaintext only inside the judge.</h3>
+          <p>
+            Commit-reveal satisfies the required EVM track. The stronger Ritual path keeps ciphertext CIDs and hashes on-chain, decrypts the eligible batch inside a TEE-backed judge, and anchors only the batch receipt and winner.
+          </p>
+        </aside>
+      </div>
+
+      <div className="receipt-rail" aria-label="Bounty event receipt rail">
+        {bountyReceiptSteps.map((item, index) => (
+          <article key={item.event}>
+            <strong>{String(index + 1).padStart(2, "0")}</strong>
+            <div>
+              <span>{item.event}</span>
+              <p>{item.check}</p>
+              <code>{item.proof}</code>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div className="sdk-panel">
+        <div>
+          <span>Developer kit</span>
+          <h3>Not just a demo: reusable bounty primitives.</h3>
+          <p>These helpers make the contract easier for another builder to integrate without re-learning the full lifecycle.</p>
+        </div>
+        <div className="sdk-cards">
+          {bountySdkSnippets.map((snippet) => (
+            <article key={snippet.name}>
+              <code>{snippet.name}</code>
+              <p>{snippet.text}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function BountyJudgePage() {
   return (
     <PageShell>
@@ -1875,6 +2052,8 @@ function BountyJudgePage() {
           ))}
         </div>
       </section>
+
+      <BountyProofLab />
 
       <BountyWorkbench />
 

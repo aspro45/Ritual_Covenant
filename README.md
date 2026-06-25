@@ -193,6 +193,8 @@ Visual direction:
 - Live receipt console with explorer links.
 - Agent state cards sourced from contract storage.
 - Contract proof panel sourced from Ritual RPC.
+- Interactive bounty attack replay comparing a public answer leak against the commit-reveal gate.
+- Bounty receipt rail and developer helper cards that show how another builder can integrate the module.
 - Responsive layout tested on desktop and mobile viewport sizes.
 
 ## Run Locally
