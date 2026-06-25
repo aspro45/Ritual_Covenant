@@ -21,8 +21,9 @@ Ritual Covenant is not another dashboard that watches agents after the damage is
 | Bounty Judge deploy tx | [`0x6ee694e8fdeecd64759034a130caec0b321381a4df73ebbd782fad4ab843b95f`](https://explorer.ritualfoundation.org/tx/0x6ee694e8fdeecd64759034a130caec0b321381a4df73ebbd782fad4ab843b95f) |
 | Covenant Sentinel Consumer | [`0xa7Badcc7Cd6DD85936B2F72631aD1F804815f62c`](https://explorer.ritualfoundation.org/address/0xa7Badcc7Cd6DD85936B2F72631aD1F804815f62c) |
 | Sentinel deploy tx | [`0x50107a217e3498011ee4f6b9583b632c584a8d3f9c70511061e3e4ed1a50db07`](https://explorer.ritualfoundation.org/tx/0x50107a217e3498011ee4f6b9583b632c584a8d3f9c70511061e3e4ed1a50db07) |
-| Sovereign Agent Harness | [`0xEFf03d874DfE74B43F10c6485DedE6a1A965CF01`](https://explorer.ritualfoundation.org/address/0xEFf03d874DfE74B43F10c6485DedE6a1A965CF01) |
-| Sovereign Harness deploy tx | [`0xfae3b737437986466f9d8d1192bebd50c7cda5d5bca863c5ee3a41b4e5080eee`](https://explorer.ritualfoundation.org/tx/0xfae3b737437986466f9d8d1192bebd50c7cda5d5bca863c5ee3a41b4e5080eee) |
+| Sovereign Agent Harness | [`0x8E1a9A05c1eAf4A04f3008f4e585fA844b371633`](https://explorer.ritualfoundation.org/agents/0x8E1a9A05c1eAf4A04f3008f4e585fA844b371633?type=sovereign) |
+| Sovereign Harness deploy tx | [`0x0b42365e8164068e3e5baf532dcc7f0719f4034565a1a52edf69e5c50aab1712`](https://explorer.ritualfoundation.org/tx/0x0b42365e8164068e3e5baf532dcc7f0719f4034565a1a52edf69e5c50aab1712) |
+| Sovereign Harness start tx | [`0x517e18b283ab9e63b309da0387fa53c1bdc1432206efb8fdb28ee53f26c00e04`](https://explorer.ritualfoundation.org/tx/0x517e18b283ab9e63b309da0387fa53c1bdc1432206efb8fdb28ee53f26c00e04) |
 | Live execution tx | [`0xc2cfd5ee8d7e0106dd9a3067423731979e8f9c4b907b5f1e5a0762f1877e05fa`](https://explorer.ritualfoundation.org/tx/0xc2cfd5ee8d7e0106dd9a3067423731979e8f9c4b907b5f1e5a0762f1877e05fa) |
 | Live agent | `agent #1` |
 | Live check | `check #1` |
@@ -133,8 +134,10 @@ Live agent artifacts:
 ```text
 CovenantSentinelAgent: 0xa7Badcc7Cd6DD85936B2F72631aD1F804815f62c
 Sentinel deploy tx: 0x50107a217e3498011ee4f6b9583b632c584a8d3f9c70511061e3e4ed1a50db07
-SovereignAgentHarness: 0xEFf03d874DfE74B43F10c6485DedE6a1A965CF01
-Harness deploy tx: 0xfae3b737437986466f9d8d1192bebd50c7cda5d5bca863c5ee3a41b4e5080eee
+SovereignAgentHarness: 0x8E1a9A05c1eAf4A04f3008f4e585fA844b371633
+Harness deploy tx: 0x0b42365e8164068e3e5baf532dcc7f0719f4034565a1a52edf69e5c50aab1712
+Harness start tx: 0x517e18b283ab9e63b309da0387fa53c1bdc1432206efb8fdb28ee53f26c00e04
+Funding used for scheduled harness: 0.5 RITUAL
 ```
 
 Operational scripts:
@@ -143,6 +146,7 @@ Operational scripts:
 npm run contract:deploy:sentinel
 npm run contract:sentinel:live
 npm run contract:deploy:harness
+npm run contract:start:sovereign
 ```
 
 ## Privacy-Preserving AI Bounty Judge
