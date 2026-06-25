@@ -9,7 +9,7 @@ export const RITUAL_TESTNET = {
   covenantGuardian: "0xC5804673c09e0b492bc2371892c8c0270ef0878E",
   commitRevealBountyJudge: "0xf25720F49d877F4CAD539C6Bf0d2851B5e3Cb809",
   covenantSentinel: "0xa7Badcc7Cd6DD85936B2F72631aD1F804815f62c",
-  sovereignHarness: "0x8E1a9A05c1eAf4A04f3008f4e585fA844b371633",
+  sovereignHarness: "0xc90dFb7367CBD90c2874D819123571f566347E5D",
 };
 
 export const LIVE_PROOF = {
@@ -57,7 +57,7 @@ export const contractIntegrationChecklist = [
   "CovenantGuardianAgent is live at 0xC5804673c09e0b492bc2371892c8c0270ef0878E after local tests, gas estimates, and dry-run preflight.",
   "CommitRevealBountyJudge is deployed live at 0xf25720F49d877F4CAD539C6Bf0d2851B5e3Cb809 after local commit/reveal/judging tests.",
   "CovenantSentinelAgent is live at 0xa7Badcc7Cd6DD85936B2F72631aD1F804815f62c as a direct Sovereign Agent precompile consumer.",
-  "A scheduled SovereignAgentHarness is live at 0x8E1a9A05c1eAf4A04f3008f4e585fA844b371633 through Ritual's official SovereignAgentFactory.",
+  "A listed SovereignAgentHarness is live at 0xc90dFb7367CBD90c2874D819123571f566347E5D through Ritual's official SovereignAgentFactory.",
   "Use the explorer to verify deployment tx 0xdd17daee2f10ec9489898b5ff3660cdfd11942223c2a167d99f404b09322cd30.",
   "Live smoke proof executed agent #1 check #1 through tx 0xc2cfd5ee8d7e0106dd9a3067423731979e8f9c4b907b5f1e5a0762f1877e05fa.",
   "Point the frontend event feed at AgentRegistered, IntentSubmitted, DecisionRecorded, and WillExecuted.",
@@ -155,9 +155,9 @@ export const COVENANT_SENTINEL = {
   status: "live deployed",
   address: "0xa7Badcc7Cd6DD85936B2F72631aD1F804815f62c",
   deploymentTx: "0x50107a217e3498011ee4f6b9583b632c584a8d3f9c70511061e3e4ed1a50db07",
-  harnessAddress: "0x8E1a9A05c1eAf4A04f3008f4e585fA844b371633",
-  harnessDeployTx: "0x0b42365e8164068e3e5baf532dcc7f0719f4034565a1a52edf69e5c50aab1712",
-  harnessStartTx: "0x517e18b283ab9e63b309da0387fa53c1bdc1432206efb8fdb28ee53f26c00e04",
+  harnessAddress: "0xc90dFb7367CBD90c2874D819123571f566347E5D",
+  harnessDeployTx: "0x5597614da2a3a500dfb2e794b6cfc42749dc5a42981b28f205db889836c948f1",
+  harnessStartTx: "0xa074ed45eb9187ecea832897a43a7c40c551a3f410f82cce75e4f6c285b55d20",
   factory: "0x9dC4C054e53bCc4Ce0A0Ff09E890A7a8e817f304",
   sourcePath: "CovenantSentinelAgent.sol",
   deployCommand: "npm.cmd run contract:deploy:sentinel",

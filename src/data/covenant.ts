@@ -74,7 +74,7 @@ export const stackLinks = [
   { label: "Guardian Agent", href: "https://explorer.ritualfoundation.org/address/0xC5804673c09e0b492bc2371892c8c0270ef0878E" },
   { label: "Bounty Judge", href: "https://explorer.ritualfoundation.org/address/0xf25720F49d877F4CAD539C6Bf0d2851B5e3Cb809" },
   { label: "Sentinel Agent", href: "https://explorer.ritualfoundation.org/address/0xa7Badcc7Cd6DD85936B2F72631aD1F804815f62c" },
-  { label: "Sovereign Harness", href: "https://explorer.ritualfoundation.org/agents/0x8E1a9A05c1eAf4A04f3008f4e585fA844b371633?type=sovereign" },
+  { label: "Sovereign Harness", href: "https://explorer.ritualfoundation.org/agents/0xc90dFb7367CBD90c2874D819123571f566347E5D?type=sovereign" },
   { label: "Live execution", href: "https://explorer.ritualfoundation.org/tx/0xc2cfd5ee8d7e0106dd9a3067423731979e8f9c4b907b5f1e5a0762f1877e05fa" },
   { label: "Ritual Explorer", href: "https://explorer.ritualfoundation.org/" },
   { label: "Ritual Docs", href: "https://docs.ritualfoundation.org/" },
