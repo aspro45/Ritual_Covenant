@@ -228,6 +228,14 @@ Ritual-native hidden submission architecture:
 - Off-chain storage can hold encrypted answer blobs by CID.
 - The LLM should receive one batch containing the prompt, all eligible encrypted submissions after decryption, scoring rubric, and participant IDs, not one call per answer.
 
+Hidden Judge Room:
+
+- The frontend includes a client-side AES-GCM sealing room for the advanced track.
+- It computes the exact Solidity commitment format: `keccak256(abi.encode(answer, salt, msg.sender, bountyId))`.
+- It encrypts the answer locally with WebCrypto, generates a ciphertext hash, and exports a `ritual.hiddenJudge.v1` packet.
+- The packet documents what is public, what stays encrypted, and what the future Ritual TEE batch judge would decrypt.
+- No server receives the plaintext and no extra testnet fee is required to demonstrate the architecture.
+
 Reflection: what should be public, hidden, AI-decided, or human-decided?
 
 The bounty rules, deadlines, commitment hashes, reveal validity, judge receipt, and final winner should be public so anyone can audit the process. Answers should stay hidden during the submission phase because public answers create an unfair copying race. In the basic commit-reveal version, answers become public during reveal so the community can verify eligibility. In a stronger Ritual-native version, plaintext answers should stay inside a TEE-backed batch judge until the judging result is ready. AI should score submissions against the published rubric and produce a ranked recommendation. Humans should decide whether the rubric is fair, whether the bounty should be cancelled for abuse, and whether edge cases need review. The contract should enforce deadlines, eligibility, and finalization so neither AI nor humans can quietly change the rules after participants submit.
@@ -254,6 +262,7 @@ Visual direction:
 - Contract proof panel sourced from Ritual RPC.
 - Interactive bounty attack replay comparing a public answer leak against the commit-reveal gate.
 - Bounty receipt rail and developer helper cards that show how another builder can integrate the module.
+- Hidden Judge Room for local encrypted packets, exact commitment generation, and TEE batch architecture.
 - Responsive layout tested on desktop and mobile viewport sizes.
 
 ## Run Locally
@@ -355,6 +364,7 @@ Current verification status:
 - Commit-reveal bounty tests: pass
 - Commit-reveal bounty deploy: pass
 - Covenant Black Box frontend: added without new on-chain fee; reads existing live receipt state.
+- Hidden Judge Room: pass; local AES-GCM sealing, exact commitment generation, JSON packet export, and desktop/mobile overflow checks.
 - Gas estimate: pass
 - Live Ritual flow: pass
 - Live Guardian flow: pass

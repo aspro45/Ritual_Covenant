@@ -4434,6 +4434,181 @@ body {
   white-space: nowrap;
 }
 
+.hidden-judge-room {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(320px, 0.72fr);
+  gap: 1rem;
+  align-items: stretch;
+  border: 2px solid var(--black);
+  border-radius: 6px;
+  padding: clamp(1rem, 2.6vw, 1.6rem);
+  background:
+    linear-gradient(120deg, rgba(255, 217, 79, 0.08), rgba(53, 255, 154, 0.075)),
+    rgba(6, 16, 11, 0.96);
+  box-shadow:
+    5px 5px 0 rgba(0, 0, 0, 0.58),
+    inset 0 1px 0 rgba(255, 248, 223, 0.08);
+}
+
+.hidden-room-copy,
+.hidden-seal-panel {
+  min-width: 0;
+}
+
+.hidden-room-copy > span,
+.hidden-proof-stack span,
+.privacy-map span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--green);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.hidden-room-copy h2 {
+  max-width: 780px;
+  margin-top: 0.6rem;
+  color: var(--paper);
+  font-size: clamp(2rem, 4.2vw, 4.1rem);
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.hidden-room-copy > p {
+  max-width: 780px;
+  margin-top: 0.75rem;
+  color: var(--soft);
+  font-weight: 700;
+  line-height: 1.48;
+}
+
+.hidden-flow-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.hidden-flow-grid article,
+.hidden-seal-panel,
+.hidden-proof-stack div,
+.privacy-map article {
+  border: 2px solid rgba(5, 8, 6, 0.86);
+  border-radius: 5px;
+  background: rgba(5, 12, 8, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 248, 223, 0.06);
+}
+
+.hidden-flow-grid article {
+  display: grid;
+  align-content: start;
+  gap: 0.55rem;
+  min-height: 190px;
+  padding: 0.9rem;
+}
+
+.hidden-flow-grid strong {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(53, 255, 154, 0.32);
+  color: var(--green);
+  font-family: "Space Mono", monospace;
+}
+
+.hidden-flow-grid h3 {
+  color: var(--paper);
+  font-size: clamp(1.05rem, 1.4vw, 1.35rem);
+  line-height: 1.05;
+}
+
+.hidden-flow-grid p {
+  color: var(--soft);
+  font-size: 0.9rem;
+  font-weight: 680;
+  line-height: 1.42;
+}
+
+.hidden-seal-panel {
+  display: grid;
+  gap: 0.85rem;
+  padding: 0.9rem;
+}
+
+.hidden-seal-form {
+  display: grid;
+  gap: 0.72rem;
+}
+
+.hidden-proof-stack {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.hidden-proof-stack div {
+  display: grid;
+  gap: 0.34rem;
+  min-width: 0;
+  padding: 0.72rem;
+}
+
+.hidden-proof-stack code {
+  color: var(--paper);
+  font-family: "Space Mono", monospace;
+  font-size: 0.78rem;
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.privacy-map {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.privacy-map article {
+  min-width: 0;
+  padding: 0.72rem;
+}
+
+.privacy-map p {
+  margin-top: 0.4rem;
+  color: var(--soft);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.38;
+}
+
+.hidden-export-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  border-top: 2px solid rgba(255, 248, 223, 0.12);
+  padding-top: 0.85rem;
+}
+
+.hidden-export-row p {
+  min-width: 0;
+  color: var(--paper);
+  font-weight: 780;
+  line-height: 1.35;
+}
+
+.hidden-export-row .secondary-action {
+  min-height: 42px;
+  white-space: nowrap;
+}
+
+.hidden-export-row .secondary-action.disabled {
+  pointer-events: none;
+  filter: grayscale(0.8);
+  opacity: 0.5;
+}
+
 .bounty-workbench {
   display: grid;
   gap: 1rem;
@@ -4776,7 +4951,8 @@ body {
 @media (max-width: 860px) {
   .bounty-layout,
   .bounty-visual-proof,
-  .proof-lab-grid {
+  .proof-lab-grid,
+  .hidden-judge-room {
     grid-template-columns: 1fr;
   }
 
@@ -4813,7 +4989,8 @@ body {
 
   .proof-mode-toggle,
   .receipt-rail,
-  .sdk-cards {
+  .sdk-cards,
+  .hidden-flow-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
   }
@@ -4850,13 +5027,25 @@ body {
   .proof-mode-toggle,
   .receipt-rail,
   .sdk-cards,
+  .hidden-flow-grid,
+  .privacy-map,
   .dual-inputs,
   .workbench-actions {
     grid-template-columns: 1fr;
   }
 
-  .bounty-proof-lab {
+  .bounty-proof-lab,
+  .hidden-judge-room {
     padding: 0.85rem;
+  }
+
+  .hidden-room-copy h2 {
+    font-size: clamp(2.05rem, 11vw, 3.4rem);
+  }
+
+  .hidden-export-row {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .receipt-rail article {

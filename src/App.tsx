@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { keccak256, stringToHex, type Address } from "viem";
+import { encodeAbiParameters, keccak256, stringToHex, type Address, type Hex } from "viem";
 import { useAccount, useChainId, useReadContract } from "wagmi";
 import {
   ArrowRight,
@@ -65,6 +65,29 @@ type CovenantCase = {
   tx: string;
   txHref?: string;
   confidence: number;
+};
+
+type HiddenJudgePacket = {
+  version: "ritual.hiddenJudge.v1";
+  bountyId: number;
+  participant: Address;
+  promptHash: Hex;
+  commitment: Hex;
+  salt: Hex;
+  ciphertextHash: Hex;
+  batchInputHash: Hex;
+  encryption: {
+    algorithm: "AES-GCM";
+    kdf: "PBKDF2-SHA256";
+    iv: string;
+    ciphertext: string;
+  };
+  privacyMap: {
+    plaintext: string;
+    onChain: string[];
+    offChain: string[];
+    tee: string;
+  };
 };
 
 const kernelReadAbi = [
@@ -369,6 +392,24 @@ const bountySdkSnippets = [
   },
 ];
 
+const hiddenJudgeFlow = [
+  {
+    title: "Client seals answer",
+    text: "The builder keeps plaintext in the browser, generates the normal commitment, and encrypts the answer into a sealed packet.",
+  },
+  {
+    title: "Chain sees proofs",
+    text: "The contract stores commitment, deadlines, reveal eligibility, and the final batch hash instead of leaking answers early.",
+  },
+  {
+    title: "TEE judges once",
+    text: "A Ritual-backed judge can decrypt the eligible batch inside the enclave and submit one scored result receipt.",
+  },
+];
+
+const hiddenJudgePublicFields = ["bountyId", "commitment", "ciphertextHash", "batchInputHash", "winner"];
+const hiddenJudgePrivateFields = ["raw answer", "secret phrase", "TEE decrypted batch"];
+
 const blackBoxLayers = [
   {
     id: "intent",
@@ -419,6 +460,54 @@ function classForKind(kind: CaseKind) {
 
 function shortHash(value: string, head = 6, tail = 4) {
   return value.length > head + tail + 3 ? `${value.slice(0, head)}...${value.slice(-tail)}` : value;
+}
+
+function bytesToHex(bytes: Uint8Array) {
+  return `0x${Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("")}`;
+}
+
+function bytesToBase64(bytes: Uint8Array) {
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary);
+}
+
+function normalizeBytes32(input: string): Hex {
+  const trimmed = input.trim();
+  if (/^0x[0-9a-fA-F]{64}$/.test(trimmed)) return trimmed as Hex;
+  return keccak256(stringToHex(trimmed || "ritual-hidden-judge"));
+}
+
+async function encryptForHiddenJudge(answer: string, secret: string) {
+  const encoder = new TextEncoder();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret || "ritual-covenant-hidden-judge"),
+    "PBKDF2",
+    false,
+    ["deriveKey"],
+  );
+  const key = await crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      hash: "SHA-256",
+      iterations: 120_000,
+      salt: encoder.encode("ritual-covenant-hidden-judge-v1"),
+    },
+    keyMaterial,
+    { name: "AES-GCM", length: 256 },
+    false,
+    ["encrypt"],
+  );
+  const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoder.encode(answer));
+
+  return {
+    iv: bytesToHex(iv),
+    ciphertext: bytesToBase64(new Uint8Array(encrypted)),
+  };
 }
 
 function decisionKind(decision: string): CaseKind {
@@ -2250,6 +2339,183 @@ function BountyProofLab() {
   );
 }
 
+function HiddenJudgeRoom() {
+  const { address } = useAccount();
+  const [bountyId, setBountyId] = useState("1");
+  const [answer, setAnswer] = useState("A fair bounty system should hide submissions until the commit window closes.");
+  const [salt, setSalt] = useState("ritual-builder-private-salt");
+  const [secret, setSecret] = useState("ritual-tee-demo-key");
+  const [packet, setPacket] = useState<HiddenJudgePacket | null>(null);
+  const [sealStatus, setSealStatus] = useState("Ready to seal locally.");
+
+  const participant = (address ?? BOUNTY_JUDGE.owner) as Address;
+  const numericBountyId = Math.max(1, Math.floor(Number(bountyId) || 1));
+  const normalizedSalt = useMemo(() => normalizeBytes32(salt), [salt]);
+  const promptHash = useMemo(() => keccak256(stringToHex("Ritual Covenant hidden bounty judge rubric v1")), []);
+
+  const exactCommitment = useMemo(
+    () =>
+      keccak256(
+        encodeAbiParameters(
+          [
+            { name: "answer", type: "string" },
+            { name: "salt", type: "bytes32" },
+            { name: "participant", type: "address" },
+            { name: "bountyId", type: "uint256" },
+          ],
+          [answer, normalizedSalt, participant, BigInt(numericBountyId)],
+        ),
+      ),
+    [answer, normalizedSalt, numericBountyId, participant],
+  );
+
+  const packetHref = useMemo(() => {
+    if (!packet) return undefined;
+    return `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(packet, null, 2))}`;
+  }, [packet]);
+
+  async function sealPacket() {
+    if (!answer.trim()) {
+      setSealStatus("Write an answer before sealing.");
+      return;
+    }
+
+    try {
+      setSealStatus("Encrypting answer in this browser.");
+      const encrypted = await encryptForHiddenJudge(answer.trim(), secret);
+      const ciphertextHash = keccak256(stringToHex(`${encrypted.iv}:${encrypted.ciphertext}`));
+      const batchInputHash = keccak256(
+        encodeAbiParameters(
+          [
+            { name: "bountyId", type: "uint256" },
+            { name: "promptHash", type: "bytes32" },
+            { name: "commitment", type: "bytes32" },
+            { name: "ciphertextHash", type: "bytes32" },
+            { name: "judgeMode", type: "string" },
+          ],
+          [BigInt(numericBountyId), promptHash, exactCommitment, ciphertextHash, "ritual-tee-batch"],
+        ),
+      );
+
+      setPacket({
+        version: "ritual.hiddenJudge.v1",
+        bountyId: numericBountyId,
+        participant,
+        promptHash,
+        commitment: exactCommitment,
+        salt: normalizedSalt,
+        ciphertextHash,
+        batchInputHash,
+        encryption: {
+          algorithm: "AES-GCM",
+          kdf: "PBKDF2-SHA256",
+          iv: encrypted.iv,
+          ciphertext: encrypted.ciphertext,
+        },
+        privacyMap: {
+          plaintext: "browser before sealing; future Ritual TEE batch judge during scoring",
+          onChain: hiddenJudgePublicFields,
+          offChain: ["encrypted answer blob", "ciphertext CID", "ciphertextHash"],
+          tee: "decrypt eligible answers once, score the full batch, return result hash and winner",
+        },
+      });
+      setSealStatus("Sealed locally. No transaction was sent.");
+    } catch (error) {
+      setSealStatus(error instanceof Error ? error.message : "Could not seal packet.");
+    }
+  }
+
+  return (
+    <section className="hidden-judge-room" aria-label="Ritual-native hidden judge sealing room">
+      <div className="hidden-room-copy">
+        <span>
+          <Vault size={16} />
+          Advanced track kit
+        </span>
+        <h2>Hidden answers until the judge is ready.</h2>
+        <p>
+          This local sealing room shows the Ritual-native path: commit on-chain, keep answer ciphertext off-chain,
+          decrypt the eligible batch inside a TEE-backed judge, then anchor one result receipt.
+        </p>
+        <div className="hidden-flow-grid">
+          {hiddenJudgeFlow.map((item, index) => (
+            <article key={item.title}>
+              <strong>{String(index + 1).padStart(2, "0")}</strong>
+              <h3>{item.title}</h3>
+              <p>{item.text}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <div className="hidden-seal-panel">
+        <div className="terminal-head">
+          <LockKeyhole size={17} />
+          <span>TEE batch envelope</span>
+          <strong>local only</strong>
+        </div>
+        <div className="hidden-seal-form">
+          <label className="form-field">
+            <span>Bounty ID</span>
+            <input min="1" type="number" value={bountyId} onChange={(event) => setBountyId(event.target.value)} />
+          </label>
+          <label className="form-field">
+            <span>Answer plaintext</span>
+            <textarea value={answer} onChange={(event) => setAnswer(event.target.value)} rows={4} />
+          </label>
+          <div className="dual-inputs">
+            <label className="form-field">
+              <span>Salt or bytes32</span>
+              <input value={salt} onChange={(event) => setSalt(event.target.value)} />
+            </label>
+            <label className="form-field">
+              <span>Local secret</span>
+              <input value={secret} onChange={(event) => setSecret(event.target.value)} />
+            </label>
+          </div>
+          <button className="primary-action workbench-button" type="button" onClick={sealPacket}>
+            Seal locally
+          </button>
+        </div>
+
+        <div className="hidden-proof-stack">
+          <div>
+            <span>Contract commitment</span>
+            <code>{shortHash(exactCommitment, 18, 14)}</code>
+          </div>
+          <div>
+            <span>Ciphertext hash</span>
+            <code>{packet ? shortHash(packet.ciphertextHash, 18, 14) : "not sealed yet"}</code>
+          </div>
+          <div>
+            <span>Batch input hash</span>
+            <code>{packet ? shortHash(packet.batchInputHash, 18, 14) : "not sealed yet"}</code>
+          </div>
+        </div>
+
+        <div className="privacy-map">
+          <article>
+            <span>Public</span>
+            <p>{hiddenJudgePublicFields.join(", ")}</p>
+          </article>
+          <article>
+            <span>Hidden</span>
+            <p>{hiddenJudgePrivateFields.join(", ")}</p>
+          </article>
+        </div>
+
+        <div className="hidden-export-row">
+          <p>{sealStatus}</p>
+          <a className={packetHref ? "secondary-action" : "secondary-action disabled"} href={packetHref} download="ritual-hidden-judge-packet.json" aria-disabled={!packetHref}>
+            <Download size={16} />
+            Export packet
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function BountyJudgePage() {
   return (
     <PageShell>
@@ -2322,6 +2588,8 @@ function BountyJudgePage() {
       </section>
 
       <BountyProofLab />
+
+      <HiddenJudgeRoom />
 
       <BountyWorkbench />
 
