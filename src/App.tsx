@@ -51,7 +51,7 @@ import {
 import { fetchLiveCovenantState, type LiveCovenantState } from "./lib/onchain";
 import { ritualTestnet } from "./lib/web3";
 
-type PageId = "overview" | "brief" | "firewall" | "bounty" | "agents" | "policy" | "inheritance" | "contracts" | "pitch";
+type PageId = "overview" | "brief" | "firewall" | "blackbox" | "bounty" | "agents" | "policy" | "inheritance" | "contracts" | "pitch";
 type LiveStatus = "loading" | "live" | "error";
 
 type CovenantCase = {
@@ -95,6 +95,7 @@ const routes: Array<{ id: PageId; label: string; icon: LucideIcon; kicker: strin
   { id: "overview", label: "Command", icon: Home, kicker: "Control" },
   { id: "brief", label: "Brief", icon: ScrollText, kicker: "Read" },
   { id: "firewall", label: "Firewall", icon: ShieldAlert, kicker: "Gate" },
+  { id: "blackbox", label: "Black Box", icon: Fingerprint, kicker: "Receipts" },
   { id: "bounty", label: "Bounty Judge", icon: LockKeyhole, kicker: "Commit-Reveal" },
   { id: "agents", label: "Agents", icon: RadioTower, kicker: "Fleet" },
   { id: "policy", label: "Policy Studio", icon: BookOpenCheck, kicker: "Limits" },
@@ -168,6 +169,10 @@ const pageCopy: Record<PageId, { title: string; subtitle: string }> = {
   firewall: {
     title: "Intent Enforcement",
     subtitle: "Risky agent actions are checked before funds, data keys, or authority move.",
+  },
+  blackbox: {
+    title: "Covenant Black Box",
+    subtitle: "A flight recorder for autonomous-agent decisions, policy proofs, and recovery actions.",
   },
   bounty: {
     title: "Commit-Reveal Bounty",
@@ -362,6 +367,50 @@ const bountySdkSnippets = [
     name: "verifyReveal",
     text: "Reject wrong salts, copied hashes, duplicate reveals, and expired windows.",
   },
+];
+
+const blackBoxLayers = [
+  {
+    id: "intent",
+    label: "Intent",
+    icon: TerminalSquare,
+    title: "What did the agent try to do?",
+    text: "The recorder binds target, value, calldata hash, submitter, TTL, and the active kernel address before execution can happen.",
+    proof: "intentHash",
+  },
+  {
+    id: "policy",
+    label: "Policy",
+    icon: ShieldCheck,
+    title: "Which rule was active?",
+    text: "The receipt keeps the policy hash with the action, so a reviewer can compare the decision against the exact signed operating boundary.",
+    proof: "policyHash",
+  },
+  {
+    id: "decision",
+    label: "Decision",
+    icon: BadgeCheck,
+    title: "Who approved, blocked, slashed, or inherited?",
+    text: "CovenantKernel records the decision, attestor, reason hash, reason CID, and receipt hash as a machine-readable audit record.",
+    proof: "receiptHash",
+  },
+  {
+    id: "remedy",
+    label: "Remedy",
+    icon: Workflow,
+    title: "What happened after the decision?",
+    text: "Allowed actions can execute; unsafe actions can stop, cool down, slash bonded value, or open the successor path after heartbeat failure.",
+    proof: "execution",
+  },
+] as const;
+
+const blackBoxSchema = [
+  ["intentHash", "Sender-bound action hash for replay protection."],
+  ["policyHash", "Exact policy active when the decision was made."],
+  ["reasonHash", "Machine-readable reason behind the outcome."],
+  ["receiptHash", "Canonical receipt tying check, agent, policy, intent, and decision."],
+  ["remedy", "Allowed, blocked, slashed, cooled down, or inherited result."],
+  ["explorer", "Public tx link for reviewers and downstream tools."],
 ];
 
 function classForKind(kind: CaseKind) {
@@ -993,6 +1042,186 @@ function FirewallPage({
             <strong>{state}</strong>
           </article>
         ))}
+      </section>
+    </PageShell>
+  );
+}
+
+function BlackBoxPage({
+  liveState,
+  liveStatus,
+  liveError,
+}: {
+  liveState: LiveCovenantState | null;
+  liveStatus: LiveStatus;
+  liveError: string | null;
+}) {
+  const [activeLayer, setActiveLayer] = useState<(typeof blackBoxLayers)[number]["id"]>("decision");
+  const activeLayerMeta = blackBoxLayers.find((layer) => layer.id === activeLayer) ?? blackBoxLayers[0];
+  const finalTx = liveState?.txs[liveState.txs.length - 1];
+  const receiptHash =
+    liveState?.receipt.receiptHash ??
+    digestPayload({
+      status: liveStatus,
+      kernel: RITUAL_TESTNET.covenantKernel,
+      message: liveError ?? "waiting for Ritual RPC",
+    });
+  const blackBoxPayload = useMemo(
+    () => ({
+      version: "covenant.blackbox.v1",
+      chain: RITUAL_TESTNET.chainName,
+      kernel: RITUAL_TESTNET.covenantKernel,
+      liveStatus,
+      fetchedAt: liveState?.fetchedAt ?? new Date().toISOString(),
+      checkId: liveState?.checkId ?? null,
+      agentId: liveState?.agentId ?? null,
+      intent: liveState?.intent ?? null,
+      receipt: liveState?.receipt ?? null,
+      remedy: liveState
+        ? liveState.intent.executed
+          ? `Executed. Sink received ${liveState.sink.received} RITUAL.`
+          : `${liveState.receipt.decision} receipt recorded; execution is not marked complete.`
+        : liveError ?? "Ritual RPC read pending.",
+      explorer: finalTx ? `${RITUAL_TESTNET.explorerUrl}/tx/${finalTx.hash}` : `${RITUAL_TESTNET.explorerUrl}/address/${RITUAL_TESTNET.covenantKernel}`,
+    }),
+    [finalTx, liveError, liveState, liveStatus],
+  );
+  const receiptDownload = `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(blackBoxPayload, null, 2))}`;
+  const recorderRows = liveState
+    ? [
+        ["agent", `#${liveState.agentId}`],
+        ["check", `#${liveState.checkId}`],
+        ["decision", liveState.receipt.decision],
+        ["intent", shortHash(liveState.intent.intentHash, 10, 8)],
+        ["policy", shortHash(liveState.receipt.policyHash, 10, 8)],
+        ["receipt", shortHash(liveState.receipt.receiptHash, 10, 8)],
+      ]
+    : [
+        ["agent", "pending"],
+        ["check", "pending"],
+        ["decision", liveStatus],
+        ["intent", shortHash(receiptHash, 10, 8)],
+        ["policy", shortHash(RITUAL_TESTNET.covenantKernel, 10, 8)],
+        ["receipt", liveError ? "rpc error" : "reading"],
+      ];
+  const investigationTrail = liveState
+    ? [
+        ["01", "Intent captured", `Target ${shortHash(liveState.intent.target, 8, 6)} with ${liveState.intent.value} RITUAL value.`],
+        ["02", "Policy bound", `Policy hash ${shortHash(liveState.receipt.policyHash, 10, 8)} stayed attached to the receipt.`],
+        ["03", "Decision recorded", `${liveState.receipt.decision} by attestor ${shortHash(liveState.receipt.attestor, 8, 6)}.`],
+        ["04", "Remedy verified", liveState.intent.executed ? `Execution tx ${shortHash(finalTx?.hash ?? "", 8, 6)} moved value after approval.` : "No execution marked after the receipt."],
+      ]
+    : [
+        ["01", "Kernel selected", shortHash(RITUAL_TESTNET.covenantKernel, 10, 8)],
+        ["02", "RPC state", liveError ?? "Waiting for CovenantKernel storage."],
+        ["03", "Receipt export", "The recorder will export the current chain read as JSON."],
+        ["04", "Reviewer path", "Use the kernel and tx links to inspect the source of truth."],
+      ];
+
+  return (
+    <PageShell>
+      <section className="blackbox-hero">
+        <article className="blackbox-copy">
+          <span className="eyebrow">
+            <Fingerprint size={16} />
+            Agent flight recorder
+          </span>
+          <h1>Every autonomous action leaves an explainable black box.</h1>
+          <p>
+            Covenant Black Box turns the existing kernel receipt into an investigation trail: what the agent tried,
+            which policy applied, who attested the decision, and what remedy followed.
+          </p>
+          <div className="brief-meta" aria-label="Black Box proof links">
+            <a href={`${RITUAL_TESTNET.explorerUrl}/address/${RITUAL_TESTNET.covenantKernel}`} target="_blank" rel="noreferrer">
+              Kernel <ExternalLink size={14} />
+            </a>
+            {finalTx && (
+              <a href={`${RITUAL_TESTNET.explorerUrl}/tx/${finalTx.hash}`} target="_blank" rel="noreferrer">
+                Final tx <ExternalLink size={14} />
+              </a>
+            )}
+            <a href={receiptDownload} download="covenant-black-box-receipt.json">
+              Export JSON <Download size={14} />
+            </a>
+          </div>
+        </article>
+
+        <aside className="blackbox-recorder">
+          <div className="recorder-head">
+            <TerminalSquare size={18} />
+            <div>
+              <span>{RITUAL_TESTNET.chainName}</span>
+              <strong>{liveStatus === "live" ? "live recorder" : liveStatus}</strong>
+            </div>
+          </div>
+          <div className="recorder-grid">
+            {recorderRows.map(([label, value]) => (
+              <div key={label}>
+                <span>{label}</span>
+                <strong>{value}</strong>
+              </div>
+            ))}
+          </div>
+          <code>{shortHash(receiptHash, 18, 16)}</code>
+        </aside>
+      </section>
+
+      <section className="blackbox-lab">
+        <div className="blackbox-layers" role="group" aria-label="Black Box evidence layers">
+          {blackBoxLayers.map(({ id, label, icon: Icon }) => (
+            <button className={activeLayer === id ? "active" : ""} key={id} onClick={() => setActiveLayer(id)} type="button">
+              <Icon size={18} />
+              <span>{label}</span>
+            </button>
+          ))}
+        </div>
+
+        <article className="blackbox-focus">
+          <span>{activeLayerMeta.proof}</span>
+          <h2>{activeLayerMeta.title}</h2>
+          <p>{activeLayerMeta.text}</p>
+          <div className="blackbox-proof-line">
+            <strong>{liveState ? `check #${liveState.checkId}` : liveStatus}</strong>
+            <code>
+              {activeLayer === "intent" && liveState ? shortHash(liveState.intent.intentHash, 14, 12) : null}
+              {activeLayer === "policy" && liveState ? shortHash(liveState.receipt.policyHash, 14, 12) : null}
+              {activeLayer === "decision" && liveState ? shortHash(liveState.receipt.receiptHash, 14, 12) : null}
+              {activeLayer === "remedy" && liveState ? (liveState.intent.executed ? "execution verified" : "receipt only") : null}
+              {!liveState ? shortHash(receiptHash, 14, 12) : null}
+            </code>
+          </div>
+        </article>
+
+        <div className="blackbox-trail" aria-label="Investigation trail">
+          {investigationTrail.map(([step, title, detail]) => (
+            <div className="blackbox-trail-step" key={step}>
+              <span>{step}</span>
+              <div>
+                <strong>{title}</strong>
+                <p>{detail}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="blackbox-schema">
+        <div>
+          <span>Receipt schema</span>
+          <h2>Readable by humans. Structured enough for agents.</h2>
+          <p>
+            The point is not a nicer dashboard. The point is a portable record another agent, judge, or operator
+            can replay without trusting a screenshot.
+          </p>
+        </div>
+        <div className="schema-grid">
+          {blackBoxSchema.map(([field, detail]) => (
+            <article key={field}>
+              <code>{field}</code>
+              <p>{detail}</p>
+            </article>
+          ))}
+        </div>
       </section>
     </PageShell>
   );
@@ -2341,6 +2570,7 @@ export default function App() {
         {activePage === "firewall" && (
           <FirewallPage cases={liveCases} selected={selected} onSelect={setSelectedCaseId} liveState={liveState} liveStatus={liveStatus} />
         )}
+        {activePage === "blackbox" && <BlackBoxPage liveState={liveState} liveStatus={liveStatus} liveError={liveError} />}
         {activePage === "bounty" && <BountyJudgePage />}
         {activePage === "agents" && <AgentsPage liveState={liveState} liveStatus={liveStatus} liveError={liveError} />}
         {activePage === "brief" && <BriefPage liveState={liveState} liveStatus={liveStatus} go={go} />}

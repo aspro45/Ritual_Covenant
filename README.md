@@ -2,7 +2,7 @@
 
 **A live on-chain policy firewall for autonomous agents on Ritual Chain Testnet.**
 
-Ritual Covenant is not another dashboard that watches agents after the damage is done. It is a pre-execution control layer: an agent submits an intent, the kernel records a policy decision, bonded value is enforced, and approved execution becomes a public receipt.
+Ritual Covenant is not another dashboard that watches agents after the damage is done. It is a pre-execution control layer: an agent submits an intent, the kernel records a policy decision, bonded value is enforced, and approved execution becomes a public receipt. Covenant Black Box turns that receipt into a replayable investigation record for agents.
 
 ![Ritual Covenant cockpit](public/ritual/ritual-covenant-cockpit.png)
 
@@ -43,6 +43,7 @@ Ritual Covenant gives autonomous agents an enforceable operating boundary:
 - **Agent registry:** binds an agent owner, successor, policy hash, policy CID, memory CID, heartbeat rule, and bonded value.
 - **Intent firewall:** stores a proposed action before value, authority, or secrets move.
 - **Decision receipts:** records `Allowed`, `Blocked`, `Slashed`, or inherited decisions as machine-readable hashes.
+- **Covenant Black Box:** turns each receipt into an explainable trail of intent, policy, decision, attestor, and remedy.
 - **Bond enforcement:** approved execution debits only the registered agent's own bond.
 - **Slashing path:** attestors can freeze and slash an agent that violates policy.
 - **Machine inheritance:** missed heartbeat conditions can transfer control to a registered successor.
@@ -67,6 +68,7 @@ flowchart LR
   Intent --> Kernel["CovenantKernel"]
   Kernel --> Policy["Policy Hash + CID"]
   Kernel --> Receipt["Decision Receipt"]
+  Receipt --> BlackBox["Covenant Black Box"]
   Receipt -->|Allowed| Execute["executeApproved"]
   Execute --> Sink["Target Contract"]
   Receipt -->|Blocked| Cooldown["Cooldown"]
@@ -119,6 +121,26 @@ Important implementation notes:
 - `executeGuardianApproved` executes only after the kernel stores an `Allowed` receipt.
 
 The live Guardian flow was executed on Ritual Chain Testnet: the Guardian was trusted as a kernel attestor, allowlisted the live sink target, registered itself as kernel agent `#2`, submitted check `#2`, recorded an `Allowed` receipt, and executed `0.001 RITUAL` through the kernel.
+
+## Covenant Black Box
+
+Covenant Black Box is the investigation layer for autonomous agents. It does not require a new deployment: it uses the `DecisionReceipt` already stored in `CovenantKernel` and presents it as a portable flight recorder.
+
+For every high-risk agent action, the Black Box view answers:
+
+1. **What did the agent try to do?** Target, value, calldata hash, submitter, TTL, and intent hash.
+2. **Which policy was active?** Policy hash and policy CID binding the agent to its operating boundary.
+3. **Who made the decision?** Decision enum, attestor, reason hash, reason CID, and receipt hash.
+4. **What happened after?** Execution, block, tx hash, value moved, bond remaining, or blocked/slashed/inherited remedy.
+
+Why this matters:
+
+- Reviewers can inspect the agent's decision path without reading the full contract first.
+- Other agents can consume the same JSON receipt as a machine-readable audit object.
+- The project becomes more Ritual-native: long-running agents are not only scheduled and funded, they are accountable.
+- It costs no extra testnet fee today because the live kernel already emits and stores the receipt data.
+
+The frontend includes a dedicated `Black Box` page with a live recorder, layer selector, investigation trail, and downloadable `covenant.blackbox.v1` JSON receipt.
 
 ## Covenant Sentinel Sovereign Agent
 
@@ -227,6 +249,7 @@ Visual direction:
 
 - Ritual-inspired hand-drawn science fiction layer.
 - Live receipt console with explorer links.
+- Covenant Black Box page with a live receipt recorder, evidence layers, investigation trail, and JSON export.
 - Agent state cards sourced from contract storage.
 - Contract proof panel sourced from Ritual RPC.
 - Interactive bounty attack replay comparing a public answer leak against the commit-reveal gate.
@@ -331,6 +354,7 @@ Current verification status:
 - Contract tests: pass
 - Commit-reveal bounty tests: pass
 - Commit-reveal bounty deploy: pass
+- Covenant Black Box frontend: added without new on-chain fee; reads existing live receipt state.
 - Gas estimate: pass
 - Live Ritual flow: pass
 - Live Guardian flow: pass

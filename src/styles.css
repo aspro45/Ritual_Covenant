@@ -1235,6 +1235,304 @@ svg {
   text-transform: uppercase;
 }
 
+.blackbox-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(330px, 0.85fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.blackbox-copy,
+.blackbox-recorder,
+.blackbox-focus,
+.blackbox-trail,
+.blackbox-schema {
+  border: 2px solid var(--black);
+  border-radius: 6px;
+  box-shadow:
+    5px 5px 0 rgba(0, 0, 0, 0.58),
+    inset 0 1px 0 rgba(255, 248, 223, 0.08);
+}
+
+.blackbox-copy {
+  position: relative;
+  min-height: 520px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: clamp(1.1rem, 4vw, 2.35rem);
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(5, 8, 6, 0.96), rgba(5, 8, 6, 0.7) 48%, rgba(5, 8, 6, 0.22)),
+    linear-gradient(180deg, rgba(5, 8, 6, 0.06), rgba(5, 8, 6, 0.88)),
+    url("/ritual/ritual-generated-kernel-city.png") center / cover no-repeat;
+}
+
+.blackbox-copy::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(53, 255, 154, 0.08) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(53, 255, 154, 0.06) 1px, transparent 1px);
+  background-size: 38px 38px;
+  opacity: 0.22;
+}
+
+.blackbox-copy > * {
+  position: relative;
+  z-index: 1;
+}
+
+.blackbox-copy h1 {
+  max-width: 820px;
+  color: var(--paper);
+  font-size: clamp(3rem, 7vw, 6.25rem);
+  line-height: 0.95;
+  text-shadow:
+    3px 3px 0 rgba(0, 0, 0, 0.76),
+    0 0 30px rgba(53, 255, 154, 0.24);
+}
+
+.blackbox-copy p {
+  max-width: 680px;
+  color: rgba(255, 248, 223, 0.88);
+  font-weight: 690;
+  line-height: 1.45;
+}
+
+.blackbox-recorder {
+  display: grid;
+  align-content: space-between;
+  min-height: 520px;
+  padding: 1rem;
+  background:
+    linear-gradient(135deg, rgba(53, 255, 154, 0.1), rgba(255, 217, 79, 0.04)),
+    rgba(5, 14, 10, 0.88);
+}
+
+.recorder-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid rgba(255, 248, 223, 0.14);
+}
+
+.recorder-head svg {
+  color: var(--green);
+}
+
+.recorder-head span,
+.recorder-grid span,
+.blackbox-focus span,
+.blackbox-schema > div:first-child span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.recorder-head strong {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--green);
+}
+
+.recorder-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 1rem 0;
+}
+
+.recorder-grid div,
+.blackbox-proof-line,
+.schema-grid article {
+  border: 2px solid rgba(5, 8, 6, 0.92);
+  border-radius: 4px;
+  background:
+    linear-gradient(180deg, rgba(255, 248, 223, 0.055), rgba(255, 248, 223, 0.012)),
+    rgba(6, 13, 9, 0.82);
+}
+
+.recorder-grid div {
+  min-height: 98px;
+  padding: 0.85rem;
+}
+
+.recorder-grid strong {
+  display: block;
+  margin-top: 0.6rem;
+  color: var(--paper);
+  overflow-wrap: anywhere;
+  line-height: 1.18;
+}
+
+.blackbox-recorder > code {
+  display: block;
+  padding: 0.9rem;
+  border: 2px solid var(--black);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.38);
+  color: var(--green);
+  font-size: 0.88rem;
+  overflow-wrap: anywhere;
+}
+
+.blackbox-lab {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.42fr) minmax(0, 1fr) minmax(300px, 0.8fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.blackbox-layers {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.blackbox-layers button {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 64px;
+  padding: 0.8rem;
+  border: 2px solid var(--black);
+  border-radius: 4px;
+  background: rgba(255, 248, 223, 0.08);
+  color: var(--soft);
+  font-weight: 900;
+  text-align: left;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.44);
+}
+
+.blackbox-layers button svg {
+  color: var(--green);
+}
+
+.blackbox-layers button.active {
+  background: var(--amber);
+  color: var(--paper-ink);
+}
+
+.blackbox-layers button.active svg {
+  color: var(--paper-ink);
+}
+
+.blackbox-focus,
+.blackbox-schema {
+  padding: clamp(1rem, 2vw, 1.35rem);
+  background:
+    linear-gradient(135deg, rgba(53, 255, 154, 0.08), rgba(255, 217, 79, 0.035)),
+    rgba(8, 18, 13, 0.9);
+}
+
+.blackbox-focus h2,
+.blackbox-schema h2 {
+  max-width: 800px;
+  color: var(--paper);
+  font-size: clamp(2rem, 4.6vw, 4.4rem);
+  line-height: 0.98;
+  text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.62);
+}
+
+.blackbox-focus p,
+.blackbox-schema p {
+  margin-top: 0.8rem;
+  color: var(--soft);
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.blackbox-proof-line {
+  display: grid;
+  grid-template-columns: minmax(90px, 0.25fr) minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1.2rem;
+  padding: 0.9rem;
+}
+
+.blackbox-proof-line strong {
+  color: var(--amber);
+}
+
+.blackbox-proof-line code {
+  color: var(--green);
+  overflow-wrap: anywhere;
+}
+
+.blackbox-trail {
+  display: grid;
+  gap: 0.65rem;
+  padding: 1rem;
+  background: rgba(5, 14, 10, 0.88);
+}
+
+.blackbox-trail-step {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 0.75rem;
+  min-height: 86px;
+  padding: 0.75rem;
+  border: 2px solid rgba(5, 8, 6, 0.92);
+  border-radius: 4px;
+  background: rgba(255, 248, 223, 0.045);
+}
+
+.blackbox-trail-step > span {
+  display: grid;
+  place-items: center;
+  align-self: start;
+  width: 42px;
+  height: 42px;
+  border: 2px solid var(--line);
+  color: var(--green);
+  font-weight: 950;
+}
+
+.blackbox-trail-step strong {
+  color: var(--paper);
+}
+
+.blackbox-trail-step p {
+  margin-top: 0.35rem;
+  color: var(--soft);
+  line-height: 1.4;
+}
+
+.blackbox-schema {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.75fr) minmax(0, 1.25fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.schema-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.schema-grid article {
+  min-height: 130px;
+  padding: 0.85rem;
+}
+
+.schema-grid code {
+  color: var(--green);
+  font-weight: 900;
+}
+
+.schema-grid p {
+  margin-top: 0.65rem;
+  font-size: 0.9rem;
+}
+
 .agent-command-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -4569,12 +4867,24 @@ body {
 @media (max-width: 1040px) {
   .wallet-command-panel,
   .abi-playground,
-  .pitch-interactive {
+  .pitch-interactive,
+  .blackbox-hero,
+  .blackbox-lab,
+  .blackbox-schema {
     grid-template-columns: 1fr;
   }
 
   .wallet-read-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .blackbox-copy,
+  .blackbox-recorder {
+    min-height: 440px;
+  }
+
+  .blackbox-layers {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
@@ -4582,12 +4892,17 @@ body {
   .recovery-planner,
   .simulator-controls,
   .planner-controls,
-  .abi-param-editor {
+  .abi-param-editor,
+  .schema-grid {
     grid-template-columns: 1fr;
   }
 
   .simulator-head {
     flex-direction: column;
+  }
+
+  .blackbox-layers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -4607,7 +4922,29 @@ body {
   .recovery-planner,
   .abi-playground,
   .wallet-command-panel,
-  .pitch-interactive {
+  .pitch-interactive,
+  .blackbox-focus,
+  .blackbox-schema,
+  .blackbox-trail {
     padding: 0.85rem;
+  }
+
+  .blackbox-copy,
+  .blackbox-recorder {
+    min-height: 430px;
+  }
+
+  .blackbox-copy h1 {
+    font-size: clamp(2.3rem, 13vw, 4rem);
+  }
+
+  .recorder-grid,
+  .blackbox-layers,
+  .blackbox-proof-line {
+    grid-template-columns: 1fr;
+  }
+
+  .blackbox-trail-step {
+    grid-template-columns: 38px minmax(0, 1fr);
   }
 }
