@@ -7,6 +7,7 @@ import {
   BadgeCheck,
   BookOpenCheck,
   CheckCircle2,
+  ChevronDown,
   CircleDollarSign,
   Download,
   ExternalLink,
@@ -88,6 +89,11 @@ type HiddenJudgePacket = {
     offChain: string[];
     tee: string;
   };
+};
+
+type DropdownOption = {
+  value: number;
+  label: string;
 };
 
 const kernelReadAbi = [
@@ -1883,6 +1889,82 @@ function LiveContractProof({ liveState, liveStatus, liveError }: { liveState: Li
   );
 }
 
+function RitualDropdown({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  options: DropdownOption[];
+  onChange: (value: number) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const activeOption = options.find((option) => option.value === value) ?? options[0];
+
+  function moveSelection(direction: 1 | -1) {
+    const currentIndex = Math.max(0, options.findIndex((option) => option.value === value));
+    const nextIndex = (currentIndex + direction + options.length) % options.length;
+    onChange(options[nextIndex].value);
+  }
+
+  return (
+    <div
+      className={`form-field ritual-dropdown ${open ? "open" : ""}`}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setOpen(false);
+        }
+      }}
+    >
+      <span>{label}</span>
+      <button
+        type="button"
+        className="ritual-dropdown-trigger"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") setOpen(false);
+          if (event.key === "ArrowDown") {
+            event.preventDefault();
+            setOpen(true);
+            moveSelection(1);
+          }
+          if (event.key === "ArrowUp") {
+            event.preventDefault();
+            setOpen(true);
+            moveSelection(-1);
+          }
+        }}
+      >
+        <strong>{activeOption?.label ?? "Select"}</strong>
+        <ChevronDown size={18} />
+      </button>
+      {open && (
+        <div className="ritual-dropdown-menu" role="listbox" aria-label={label}>
+          {options.map((option) => (
+            <button
+              type="button"
+              role="option"
+              aria-selected={option.value === value}
+              className={option.value === value ? "active" : ""}
+              key={option.value}
+              onClick={() => {
+                onChange(option.value);
+                setOpen(false);
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ContractsPage({ liveState, liveStatus, liveError }: { liveState: LiveCovenantState | null; liveStatus: LiveStatus; liveError: string | null }) {
   const { address, isConnected } = useAccount();
   const [playgroundTarget, setPlaygroundTarget] = useState<"kernel" | "guardian" | "bounty">("kernel");
@@ -1895,6 +1977,7 @@ function ContractsPage({ liveState, liveStatus, liveError }: { liveState: LiveCo
   };
   const activeGroup = playgroundGroups[playgroundTarget];
   const activeMethod = activeGroup.methods[bound(playgroundMethod, 0, activeGroup.methods.length - 1)];
+  const methodOptions = activeGroup.methods.map((method, index) => ({ value: index, label: method.name }));
   const paramValues = activeMethod.params.map((param) => playgroundValues[`${playgroundTarget}:${activeMethod.name}:${param}`] ?? "");
   const methodSignature = `${activeMethod.name}(${activeMethod.params.map((param) => param.split(" ")[0]).join(",")})`;
   const calldataPreview = useMemo(
@@ -1932,16 +2015,7 @@ function ContractsPage({ liveState, liveStatus, liveError }: { liveState: LiveCo
               </button>
             ))}
           </div>
-          <label className="form-field abi-select">
-            <span>Method</span>
-            <select value={playgroundMethod} onChange={(event) => setPlaygroundMethod(Number(event.target.value))}>
-              {activeGroup.methods.map((method, index) => (
-                <option value={index} key={method.name}>
-                  {method.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <RitualDropdown label="Method" value={playgroundMethod} options={methodOptions} onChange={setPlaygroundMethod} />
           <div className="abi-param-editor">
             {activeMethod.params.length > 0 ? (
               activeMethod.params.map((param) => {

@@ -2970,7 +2970,6 @@ pre {
   padding: 0;
 }
 
-.abi-select select,
 .abi-param-editor input {
   width: 100%;
   min-height: 42px;
@@ -2981,8 +2980,105 @@ pre {
   font: inherit;
 }
 
-.abi-select select {
-  padding: 0 0.7rem;
+.ritual-dropdown {
+  position: relative;
+  z-index: 4;
+}
+
+.ritual-dropdown.open {
+  z-index: 20;
+}
+
+.ritual-dropdown-trigger {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 48px;
+  border: 2px solid rgba(244, 255, 247, 0.14);
+  border-radius: 4px;
+  padding: 0.66rem 0.8rem;
+  background:
+    linear-gradient(180deg, rgba(10, 28, 18, 0.92), rgba(2, 8, 5, 0.94)),
+    rgba(2, 8, 5, 0.9);
+  color: var(--paper);
+  font: inherit;
+  font-weight: 900;
+  text-align: left;
+  box-shadow:
+    3px 3px 0 rgba(0, 0, 0, 0.48),
+    inset 0 1px 0 rgba(255, 248, 223, 0.06);
+}
+
+.ritual-dropdown-trigger strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ritual-dropdown-trigger svg {
+  color: var(--paper);
+  transition: transform 160ms ease;
+}
+
+.ritual-dropdown.open .ritual-dropdown-trigger {
+  border-color: var(--green);
+  box-shadow:
+    3px 3px 0 rgba(0, 0, 0, 0.55),
+    0 0 0 2px rgba(53, 255, 154, 0.12);
+}
+
+.ritual-dropdown.open .ritual-dropdown-trigger svg {
+  transform: rotate(180deg);
+}
+
+.ritual-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  right: 0;
+  display: grid;
+  gap: 0.28rem;
+  max-height: min(300px, 52vh);
+  overflow-y: auto;
+  border: 2px solid var(--black);
+  border-radius: 5px;
+  padding: 0.38rem;
+  background:
+    linear-gradient(180deg, rgba(14, 34, 22, 0.98), rgba(4, 10, 7, 0.98)),
+    #06100b;
+  box-shadow:
+    5px 5px 0 rgba(0, 0, 0, 0.58),
+    inset 0 1px 0 rgba(255, 248, 223, 0.08);
+}
+
+.ritual-dropdown-menu button {
+  min-height: 42px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  padding: 0.58rem 0.68rem;
+  background: rgba(255, 248, 223, 0.035);
+  color: var(--paper);
+  font: inherit;
+  font-weight: 850;
+  text-align: left;
+}
+
+.ritual-dropdown-menu button:hover,
+.ritual-dropdown-menu button:focus-visible {
+  border-color: rgba(53, 255, 154, 0.35);
+  background: rgba(53, 255, 154, 0.12);
+  color: var(--green);
+  outline: none;
+}
+
+.ritual-dropdown-menu button.active {
+  border-color: var(--black);
+  background: var(--amber);
+  color: var(--paper-ink);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.48);
 }
 
 .empty-param {
