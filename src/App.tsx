@@ -42,6 +42,7 @@ import {
   contractMethods,
   BOUNTY_JUDGE,
   bountyJudgeMethods,
+  COVENANT_SENTINEL,
   GUARDIAN_AGENT,
   GUARDIAN_LIVE_PROOF,
   guardianMethods,
@@ -253,6 +254,13 @@ const guardianRows = [
   ["Live check", `check #${GUARDIAN_LIVE_PROOF.checkId} / Allowed`],
   ["Execution", `${GUARDIAN_LIVE_PROOF.executionValue} RITUAL moved`],
   ["Receipt", shortHash(GUARDIAN_LIVE_PROOF.receiptHash, 8, 6)],
+];
+
+const sentinelRows = [
+  ["Consumer", shortHash(COVENANT_SENTINEL.address, 8, 6)],
+  ["Harness", shortHash(COVENANT_SENTINEL.harnessAddress, 8, 6)],
+  ["Factory", shortHash(COVENANT_SENTINEL.factory, 8, 6)],
+  ["Runtime", "Sovereign Agent 0x080C"],
 ];
 
 const builderXUrl = "https://x.com/ASPRO_22";
@@ -1680,6 +1688,37 @@ function ContractsPage({ liveState, liveStatus, liveError }: { liveState: LiveCo
           </a>
           <code>{GUARDIAN_AGENT.dryRunCommand}</code>
           <code>{GUARDIAN_AGENT.deployScript}</code>
+        </div>
+      </section>
+      <section className="guardian-contract-panel">
+        <div className="guardian-contract-head">
+          <div>
+            <span>Sovereign agent path</span>
+            <h3>{COVENANT_SENTINEL.name}</h3>
+          </div>
+          <strong>{COVENANT_SENTINEL.status}</strong>
+        </div>
+        <p>{COVENANT_SENTINEL.purpose}</p>
+        <div className="guardian-contract-grid">
+          {sentinelRows.map(([label, value]) => (
+            <div key={label}>
+              <span>{label}</span>
+              <strong>{value}</strong>
+            </div>
+          ))}
+        </div>
+        <div className="guardian-command-row">
+          <a href={`${RITUAL_TESTNET.explorerUrl}/address/${COVENANT_SENTINEL.address}`} target="_blank" rel="noreferrer">
+            Sentinel explorer <ExternalLink size={14} />
+          </a>
+          <a href={`${RITUAL_TESTNET.explorerUrl}/address/${COVENANT_SENTINEL.harnessAddress}`} target="_blank" rel="noreferrer">
+            Harness explorer <ExternalLink size={14} />
+          </a>
+          <a href={`${RITUAL_TESTNET.explorerUrl}/tx/${COVENANT_SENTINEL.harnessDeployTx}`} target="_blank" rel="noreferrer">
+            Harness tx <ExternalLink size={14} />
+          </a>
+          <code>{COVENANT_SENTINEL.deployCommand}</code>
+          <code>{COVENANT_SENTINEL.harnessCommand}</code>
         </div>
       </section>
       <section className="contract-layout">

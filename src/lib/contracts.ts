@@ -8,6 +8,8 @@ export const RITUAL_TESTNET = {
   covenantKernel: "0x4086710799f9d1Cb1eDb4D0a64522F00A5790270",
   covenantGuardian: "0xC5804673c09e0b492bc2371892c8c0270ef0878E",
   commitRevealBountyJudge: "0xf25720F49d877F4CAD539C6Bf0d2851B5e3Cb809",
+  covenantSentinel: "0xa7Badcc7Cd6DD85936B2F72631aD1F804815f62c",
+  sovereignHarness: "0xEFf03d874DfE74B43F10c6485DedE6a1A965CF01",
 };
 
 export const LIVE_PROOF = {
@@ -54,6 +56,8 @@ export const contractIntegrationChecklist = [
   "CovenantKernel is live on Ritual Chain Testnet at 0x4086710799f9d1Cb1eDb4D0a64522F00A5790270.",
   "CovenantGuardianAgent is live at 0xC5804673c09e0b492bc2371892c8c0270ef0878E after local tests, gas estimates, and dry-run preflight.",
   "CommitRevealBountyJudge is deployed live at 0xf25720F49d877F4CAD539C6Bf0d2851B5e3Cb809 after local commit/reveal/judging tests.",
+  "CovenantSentinelAgent is live at 0xa7Badcc7Cd6DD85936B2F72631aD1F804815f62c as a direct Sovereign Agent precompile consumer.",
+  "A factory-backed SovereignAgentHarness is live at 0xEFf03d874DfE74B43F10c6485DedE6a1A965CF01 through Ritual's official SovereignAgentFactory.",
   "Use the explorer to verify deployment tx 0xdd17daee2f10ec9489898b5ff3660cdfd11942223c2a167d99f404b09322cd30.",
   "Live smoke proof executed agent #1 check #1 through tx 0xc2cfd5ee8d7e0106dd9a3067423731979e8f9c4b907b5f1e5a0762f1877e05fa.",
   "Point the frontend event feed at AgentRegistered, IntentSubmitted, DecisionRecorded, and WillExecuted.",
@@ -144,6 +148,21 @@ export const BOUNTY_JUDGE = {
     "A privacy-preserving bounty module where builders commit hidden answers first, reveal only after the commit window closes, and AI judging consumes one verified batch of eligible answers.",
   reflection:
     "Commitments, deadlines, revealed answer hashes, judge receipts, and the final winner should be public. Raw answers stay hidden during the submission phase so participants cannot copy each other. In the advanced Ritual-native path, plaintext should exist only inside the participant client and Ritual TEE batch judge until a public result is ready.",
+};
+
+export const COVENANT_SENTINEL = {
+  name: "CovenantSentinelAgent",
+  status: "live deployed",
+  address: "0xa7Badcc7Cd6DD85936B2F72631aD1F804815f62c",
+  deploymentTx: "0x50107a217e3498011ee4f6b9583b632c584a8d3f9c70511061e3e4ed1a50db07",
+  harnessAddress: "0xEFf03d874DfE74B43F10c6485DedE6a1A965CF01",
+  harnessDeployTx: "0xfae3b737437986466f9d8d1192bebd50c7cda5d5bca863c5ee3a41b4e5080eee",
+  factory: "0x9dC4C054e53bCc4Ce0A0Ff09E890A7a8e817f304",
+  sourcePath: "CovenantSentinelAgent.sol",
+  deployCommand: "npm.cmd run contract:deploy:sentinel",
+  harnessCommand: "npm.cmd run contract:deploy:harness",
+  purpose:
+    "A project-native Sovereign Agent path: the Sentinel calls Ritual's 0x080C precompile, authenticates AsyncDelivery callbacks, and anchors a compact receipt for TEE returned policy analysis.",
 };
 
 export const contractMethods = [

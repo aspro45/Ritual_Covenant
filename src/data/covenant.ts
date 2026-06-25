@@ -73,6 +73,8 @@ export const stackLinks = [
   { label: "Contract", href: "https://explorer.ritualfoundation.org/address/0x4086710799f9d1Cb1eDb4D0a64522F00A5790270" },
   { label: "Guardian Agent", href: "https://explorer.ritualfoundation.org/address/0xC5804673c09e0b492bc2371892c8c0270ef0878E" },
   { label: "Bounty Judge", href: "https://explorer.ritualfoundation.org/address/0xf25720F49d877F4CAD539C6Bf0d2851B5e3Cb809" },
+  { label: "Sentinel Agent", href: "https://explorer.ritualfoundation.org/address/0xa7Badcc7Cd6DD85936B2F72631aD1F804815f62c" },
+  { label: "Sovereign Harness", href: "https://explorer.ritualfoundation.org/address/0xEFf03d874DfE74B43F10c6485DedE6a1A965CF01" },
   { label: "Live execution", href: "https://explorer.ritualfoundation.org/tx/0xc2cfd5ee8d7e0106dd9a3067423731979e8f9c4b907b5f1e5a0762f1877e05fa" },
   { label: "Ritual Explorer", href: "https://explorer.ritualfoundation.org/" },
   { label: "Ritual Docs", href: "https://docs.ritualfoundation.org/" },
@@ -110,5 +112,10 @@ export const contractModules = [
     name: "Bounty Judge",
     icon: Gavel,
     purpose: "Adds commit-reveal submissions, eligible reveal tracking, batch AI judging, and winner finalization.",
+  },
+  {
+    name: "Sentinel Agent",
+    icon: RadioTower,
+    purpose: "Connects the Covenant stack to Ritual's Sovereign Agent runtime for TEE-backed policy review.",
   },
 ];

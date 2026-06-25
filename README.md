@@ -19,6 +19,10 @@ Ritual Covenant is not another dashboard that watches agents after the damage is
 | Guardian live flow tx | [`0x602de1ae86a26601388bd3c19a2ad222e420c1fa7fbd3affe52de31aa59019b9`](https://explorer.ritualfoundation.org/tx/0x602de1ae86a26601388bd3c19a2ad222e420c1fa7fbd3affe52de31aa59019b9) |
 | Commit-Reveal Bounty Judge | [`0xf25720F49d877F4CAD539C6Bf0d2851B5e3Cb809`](https://explorer.ritualfoundation.org/address/0xf25720F49d877F4CAD539C6Bf0d2851B5e3Cb809) |
 | Bounty Judge deploy tx | [`0x6ee694e8fdeecd64759034a130caec0b321381a4df73ebbd782fad4ab843b95f`](https://explorer.ritualfoundation.org/tx/0x6ee694e8fdeecd64759034a130caec0b321381a4df73ebbd782fad4ab843b95f) |
+| Covenant Sentinel Consumer | [`0xa7Badcc7Cd6DD85936B2F72631aD1F804815f62c`](https://explorer.ritualfoundation.org/address/0xa7Badcc7Cd6DD85936B2F72631aD1F804815f62c) |
+| Sentinel deploy tx | [`0x50107a217e3498011ee4f6b9583b632c584a8d3f9c70511061e3e4ed1a50db07`](https://explorer.ritualfoundation.org/tx/0x50107a217e3498011ee4f6b9583b632c584a8d3f9c70511061e3e4ed1a50db07) |
+| Sovereign Agent Harness | [`0xEFf03d874DfE74B43F10c6485DedE6a1A965CF01`](https://explorer.ritualfoundation.org/address/0xEFf03d874DfE74B43F10c6485DedE6a1A965CF01) |
+| Sovereign Harness deploy tx | [`0xfae3b737437986466f9d8d1192bebd50c7cda5d5bca863c5ee3a41b4e5080eee`](https://explorer.ritualfoundation.org/tx/0xfae3b737437986466f9d8d1192bebd50c7cda5d5bca863c5ee3a41b4e5080eee) |
 | Live execution tx | [`0xc2cfd5ee8d7e0106dd9a3067423731979e8f9c4b907b5f1e5a0762f1877e05fa`](https://explorer.ritualfoundation.org/tx/0xc2cfd5ee8d7e0106dd9a3067423731979e8f9c4b907b5f1e5a0762f1877e05fa) |
 | Live agent | `agent #1` |
 | Live check | `check #1` |
@@ -78,6 +82,7 @@ Main contracts:
 contracts/CovenantKernel.sol          live policy kernel
 contracts/CovenantGuardianAgent.sol   tested companion agent contract
 contracts/CommitRevealBountyJudge.sol privacy-preserving bounty judge module
+contracts/CovenantSentinelAgent.sol   Sovereign Agent precompile consumer
 ```
 
 Core external surface:
@@ -113,6 +118,32 @@ Important implementation notes:
 - `executeGuardianApproved` executes only after the kernel stores an `Allowed` receipt.
 
 The live Guardian flow was executed on Ritual Chain Testnet: the Guardian was trusted as a kernel attestor, allowlisted the live sink target, registered itself as kernel agent `#2`, submitted check `#2`, recorded an `Allowed` receipt, and executed `0.001 RITUAL` through the kernel.
+
+## Covenant Sentinel Sovereign Agent
+
+`CovenantSentinelAgent` connects the Covenant architecture to Ritual's Sovereign Agent runtime. It calls the Sovereign Agent precompile at `0x080C`, authenticates callbacks from `AsyncDelivery`, and stores a compact receipt hash for the returned TEE result. The sentinel's mission is to review the live Covenant kernel and commit-reveal judge, then explain what the policy firewall is watching before autonomous value moves.
+
+The project includes both agent paths documented by Ritual:
+
+- **Direct consumer:** `CovenantSentinelAgent` invokes `0x080C` and receives `onSovereignAgentResult(bytes32,bytes)`.
+- **Factory harness:** a `SovereignAgentHarness` was deployed through the official `SovereignAgentFactory` at `0x9dC4C054e53bCc4Ce0A0Ff09E890A7a8e817f304`.
+
+Live agent artifacts:
+
+```text
+CovenantSentinelAgent: 0xa7Badcc7Cd6DD85936B2F72631aD1F804815f62c
+Sentinel deploy tx: 0x50107a217e3498011ee4f6b9583b632c584a8d3f9c70511061e3e4ed1a50db07
+SovereignAgentHarness: 0xEFf03d874DfE74B43F10c6485DedE6a1A965CF01
+Harness deploy tx: 0xfae3b737437986466f9d8d1192bebd50c7cda5d5bca863c5ee3a41b4e5080eee
+```
+
+Operational scripts:
+
+```bash
+npm run contract:deploy:sentinel
+npm run contract:sentinel:live
+npm run contract:deploy:harness
+```
 
 ## Privacy-Preserving AI Bounty Judge
 
