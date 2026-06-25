@@ -1,4 +1,3 @@
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useMemo, useState } from "react";
 import {
   encodeAbiParameters,
@@ -208,10 +207,7 @@ export function BountyWorkbench() {
         <div>
           <span>Live wallet mode</span>
           <h2>Use the deployed bounty contract.</h2>
-          <p>Connect a wallet on Ritual Chain Testnet, then create bounties, submit commitments, reveal answers, and finalize results on-chain.</p>
-        </div>
-        <div className="wallet-connect-shell">
-          <ConnectButton />
+          <p>Use the wallet control in the top bar, then create bounties, submit commitments, reveal answers, and finalize results on-chain.</p>
         </div>
       </div>
 

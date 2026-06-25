@@ -1003,9 +1003,6 @@ function AgentsPage({ liveState, liveStatus, liveError }: { liveState: LiveCoven
           <h2>{walletRole}</h2>
           <p>{isConnected ? `Connected ${shortHash(address ?? "", 8, 6)}. Kernel reads stay pointed at Ritual Chain Testnet.` : "Connect a wallet to compare it against the live registered agent."}</p>
         </div>
-        <div className="wallet-connect-shell">
-          <ConnectButton />
-        </div>
         <div className="wallet-read-grid">
           <div>
             <span>Network</span>
@@ -1532,9 +1529,6 @@ function ContractsPage({ liveState, liveStatus, liveError }: { liveState: LiveCo
           <span>ABI playground</span>
           <h2>{activeGroup.label}</h2>
           <p>{isConnected ? `Caller ${shortHash(address ?? "", 8, 6)} is ready for wallet-backed testing.` : "Read the ABI surface and prepare calls before connecting a wallet."}</p>
-          <div className="wallet-connect-shell">
-            <ConnectButton />
-          </div>
         </div>
         <div className="abi-controls">
           <div className="segmented compact-segmented" role="group" aria-label="Contract target">
@@ -2109,6 +2103,9 @@ export default function App() {
               <FileCode2 size={16} />
               Wiring
             </button>
+            <div className="topbar-wallet">
+              <ConnectButton accountStatus={{ smallScreen: "avatar", largeScreen: "address" }} chainStatus="icon" showBalance={false} />
+            </div>
           </div>
         </header>
 

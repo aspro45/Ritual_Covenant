@@ -319,8 +319,26 @@ svg {
 .topbar-actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 0.65rem;
   flex: 0 0 auto;
+}
+
+.topbar-wallet {
+  display: flex;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.topbar-wallet button {
+  min-height: 44px !important;
+  border: 2px solid var(--black) !important;
+  border-radius: 4px !important;
+  background: var(--green) !important;
+  color: #04100b !important;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.52) !important;
+  font-weight: 950 !important;
 }
 
 .page-shell {
@@ -2586,14 +2604,10 @@ pre {
 
 .wallet-command-panel {
   display: grid;
-  grid-template-columns: minmax(260px, 0.8fr) auto minmax(0, 1.2fr);
+  grid-template-columns: minmax(260px, 0.75fr) minmax(0, 1.25fr);
   gap: 1rem;
   align-items: stretch;
   padding: 1rem;
-}
-
-.wallet-command-panel .wallet-connect-shell {
-  align-self: start;
 }
 
 .wallet-read-grid {
@@ -2860,6 +2874,15 @@ pre {
     width: 100%;
     justify-content: flex-start;
     flex-wrap: wrap;
+  }
+
+  .topbar-wallet {
+    flex: 1 1 180px;
+  }
+
+  .topbar-wallet > div,
+  .topbar-wallet button {
+    width: 100% !important;
   }
 
   .side-nav {
@@ -3903,17 +3926,6 @@ body {
   color: var(--soft);
   font-weight: 680;
   line-height: 1.48;
-}
-
-.wallet-connect-shell {
-  flex: 0 0 auto;
-}
-
-.wallet-connect-shell button {
-  border: 2px solid var(--black) !important;
-  border-radius: 4px !important;
-  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.5) !important;
-  font-weight: 900 !important;
 }
 
 .chain-status-row {
